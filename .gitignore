@@ -1,0 +1,23 @@
+*.orig
+*.pyc
+*.swp
+
+/.idea
+/.vscode
+gclient_config.py_entries
+/gh-pages
+/target
+
+# Files that help ensure VSCode can work but we don't want checked into the
+# repo
+/node_modules
+/tsconfig.json
+package.json
+package-lock.json
+
+# yarn creates this in error.
+tools/node_modules/
+
+# MacOS generated files
+.DS_Store
+.DS_Store?
