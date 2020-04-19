@@ -3,12 +3,17 @@ import { Server, Router } from "./mod.ts";
 const app = new Server({port: 3000});
 const router = new Router();
 
+router.use((req) => {
+  console.log(req.cookies);
+  return null;
+});
+
 router.get("/", (req) => {
   //return "This is the admin interface!";
   return new Promise((resolve) => resolve("This is the admin interface!")); 
 })
-router.get("/edit", (req) => {
-  return new Promise((resolve) => resolve("This is an edit mode!")); 
+router.get("/edit", async (req) => {
+  return "This is an edit mode!"; 
 })
 
 app.get('/', (req) => {

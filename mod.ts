@@ -1,37 +1,59 @@
 import { serve, ServerRequest } from './deps.ts'
-import { decodeUrlEncoded, UrlEncodedValue, parseValue } from './utils/urlencoded.ts'
+import { decodeUrlEncoded, UrlEncodedValue, parseValue, parseCookieHeader } from './utils/urlencoded.ts'
 
 export class Router {
   private handlers: HandlerEntry[] = [];
 
-  public use(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
+  public add(path: string|RegExp|null|RequestHandler, method: string|null, ...handlers: RequestHandler[]) {
+    if (instanceOfRequestHandler(path)) {
+      this.handlers.push(this.generateHandlerEntry(null, null, path));
+      path = null;
+    }
+    for (const handler of handlers) {
       this.handlers.push(this.generateHandlerEntry(path, null, handler));
+    }
   }
 
-  public get(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
-      this.handlers.push(this.generateHandlerEntry(path, "GET", handler));
+  public use(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public use(...handlers: RequestHandler[]): void;
+  public use(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, null, ...handlers);
   }
 
-  public post(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
-      this.handlers.push(this.generateHandlerEntry(path, "POST", handler));
+  public get(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public get(...handlers: RequestHandler[]): void;
+  public get(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "GET", ...handlers);
   }
 
-  public put(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
-      this.handlers.push(this.generateHandlerEntry(path, "PUT", handler));
+  public head(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public head(...handlers: RequestHandler[]): void;
+  public head(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "HEAD", ...handlers);
   }
 
-  public patch(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
-      this.handlers.push(this.generateHandlerEntry(path, "PATCH", handler));
+  public post(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public post(...handlers: RequestHandler[]): void;
+  public post(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "POST", ...handlers);
   }
 
-  public delete(path: string|RegExp, ...handlers: RequestHandler[]) {
-    for (const handler of handlers)
-      this.handlers.push(this.generateHandlerEntry(path, "DELETE", handler));
+  public put(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public put(...handlers: RequestHandler[]): void;
+  public put(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "PUT", ...handlers);
+  }
+
+  public delete(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public delete(...handlers: RequestHandler[]): void;
+  public delete(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "DELETE", ...handlers);
+  }
+
+  public patch(path: string|RegExp|null, ...handlers: RequestHandler[]): void;
+  public patch(...handlers: RequestHandler[]): void;
+  public patch(path: string|RegExp|null|RequestHandler, ...handlers: RequestHandler[]): void {
+    this.add(path, "PATCH", ...handlers);
   }
 
   public async handle(req: Request): Promise<RequestHandlerSuccess> {
@@ -55,7 +77,7 @@ export class Router {
     return undefined;
   }
 
-  private generateHandlerEntry(path: string|RegExp, method: RequestMethod|null, handler: RequestHandler): HandlerEntry {
+  private generateHandlerEntry(path: string|RegExp|null, method: RequestMethod|null, handler: RequestHandler): HandlerEntry {
     if (typeof path == 'string') {
       const paramMatches = path.matchAll(/\/:([a-z]+)/g);
       const params: string[] = [];
@@ -73,13 +95,14 @@ export class Router {
   }
 
   private matchPath(req: Request, handler: HandlerEntry): string|null {
+    if (!handler.regex) {
+      return req.relPath || "/";
+    }
     if (handler.method && handler.method !== req.req.method)
       return null;
     const match = req.relPath.match(handler.regex);
     if (match) {
-      console.log(req.relPath, match[0]);
       req.relPath.substring(match[0].length) || "/";
-      console.log(req.relPath, match[0].length);
       for (var member in req.param) delete req.param[member];
       for (let i = 0; i < handler.params.length; i++) {
         req.param[handler.params[i]] = parseValue(match[i+1]);
@@ -133,14 +156,18 @@ export class Server extends Router {
 }
 
 export type RequestHandler = Router | ((req: Request) => (Promise<RequestHandlerSuccess> | RequestHandlerSuccess));
-export type RequestHandlerSuccess = string|object|null|undefined
+export type RequestHandlerSuccess = string|object|null|void;
+function instanceOfRequestHandler(object: any): object is RequestHandler {
+  return object instanceof Router || typeof object === 'function';
+}
 
-type HandlerEntry = {regex: RegExp, params: string[], method: RequestMethod|null, handler: RequestHandler};
+type HandlerEntry = {regex: RegExp|null, params: string[], method: RequestMethod|null, handler: RequestHandler};
 
 export class Request {
   readonly query: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
   readonly param: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
   readonly body: {[_: string]: any} = {};
+  readonly cookies: {[_: string]: string} = {};
   readonly path: string = "";
   relPath: string = "";
 
@@ -152,6 +179,12 @@ export class Request {
     this.path = match && match[1] && match[1].replace(/\/$/, "") || "/";
     this.relPath = this.path;
     this.query = decodeUrlEncoded(match && match[3] || "");
+
+    for (const [key, val] of req.headers.entries()) {
+      if (key === 'cookie') {
+        this.cookies = {...this.cookies, ...parseCookieHeader(val)};
+      }
+    }
   }
 }
 
