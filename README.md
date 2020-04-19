@@ -4,7 +4,7 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
 
 ## Example
 
-Run this example with `deno run --allow-net=127.0.0.1 example.ts`.
+Run this example with `deno run --allow-net=127.0.0.1 https://raw.githubusercontent.com/Caesar2011/denotrain/v0.0.1/example.ts`.
 
 ```ts
 import { Server, Router } from "./mod.ts";
@@ -33,4 +33,4 @@ app.run();
 
 ## Documentation
 
-View documentation on the [official documentation website](https://doc.deno.land/).
+View documentation on the [official documentation website](https://doc.deno.land/https/raw.githubusercontent.com/Caesar2011/denotrain/master/mod.ts).
