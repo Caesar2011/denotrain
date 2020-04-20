@@ -1,4 +1,4 @@
-import { Server, Router, ClientSuccess } from "./mod.ts";
+import { Server, Router, ClientSuccess } from "../mod.ts";
 
 const app = new Server({port: 3001});
 const router = new Router();
@@ -14,7 +14,7 @@ app.use((req) => {
 
 router.get("/", (req) => {
   //return "This is the admin interface!";
-  return new Promise((resolve) => resolve("This is the admin interface!")); 
+  return new Promise((resolve) => resolve("This is the admin interface! ")); 
 })
 router.get("/edit", async (req) => {
   return "This is an edit mode!"; 

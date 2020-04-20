@@ -1,4 +1,4 @@
-import { serve, ServerRequest } from './deps.ts'
+import { serve, ServerRequest, readFileStr, join } from './deps.ts'
 import { decodeUrlEncoded, UrlEncodedValue, parseValue } from './utils/urlencoded.ts'
 import { parseCookieHeader, generateCookieHeader, CookieOptions } from './utils/cookies.ts'
 
@@ -116,7 +116,7 @@ export class Router {
 }
 
 export class Server extends Router {
-  private options: ServerParameters;
+  public options: ServerParameters;
 
   constructor(options: ServerOptions) {
     super();
@@ -128,12 +128,13 @@ export class Server extends Router {
     const s = serve({ port: this.options.port });
     console.log(`Serving on http://localhost:${this.options.port}/`);
     for await (const req of s) {
-      this.handleRequest(new Request(req));
+      this.handleRequest(req);
     }
   }
 
-  private async handleRequest(req: Request): Promise<void> {
+  private async handleRequest(request: ServerRequest): Promise<void> {
     try {
+      const req = new Request(request, this);
       const result = await this.handle(req);
       if (result !== undefined) {
         const response: ClientSuccess = req.response;
@@ -145,17 +146,18 @@ export class Server extends Router {
       }
     } catch (e) {
       if (e instanceof ClientError) {
-        await req.req.respond({ status: e.statusCode, body: e.message });
+        await request.respond({ status: e.statusCode, body: e.message });
         return;
       } else {
-        await req.req.respond({ status: 500, body: "Internal server error!" });
+        await request.respond({ status: 500, body: "Internal server error!" });
       }
     }
-    await req.req.respond({ status: 404, body: `Requested route ${req.req.url} not found!` });
+    await request.respond({ status: 404, body: `Requested route ${request.url} not found!` });
   }
 
 }
 
+type Body = Uint8Array | Deno.Reader | string;
 type JSONSuccess = {[_: string]: any};
 export type RequestHandler = Router | ((req: Request) => (Promise<RequestHandlerSuccess> | RequestHandlerSuccess));
 export type RequestHandlerSuccess = true|string|JSONSuccess|null|void;
@@ -173,10 +175,9 @@ export class Request {
   readonly path: string = "";
   relPath: string = "";
   readonly response: ClientSuccess = new ClientSuccess();
+  readonly data: {[_: string]: any} = {};
 
-  constructor(public req: ServerRequest) {
-    this.req.url = req.url;
-    this.req.respond = req.respond;
+  constructor(public readonly req: ServerRequest, public readonly app: Server) {
     const regex = /^(.*?)(\?(.*))?$/;
     const match = req.url.match(regex) || [undefined, undefined, undefined, undefined];
     this.path = match && match[1] && match[1].replace(/\/$/, "") || "/";
@@ -189,6 +190,13 @@ export class Request {
       }
     }
   }
+
+  async render(path: string|string[], data: {[_: string]: any}): Promise<void> {
+    if (!this.app.options.viewEngine)
+      throw ReferenceError("No view engine provided!");
+    this.app.options.viewEngine.render(path, data, this);
+    return;
+  }
 }
 
 export class ClientError extends Error {
@@ -199,7 +207,7 @@ export class ClientError extends Error {
 
 export class ClientSuccess {
 
-  public body: Uint8Array | Deno.Reader | string | null = null;
+  public body: Body | null = null;
   public mimeType: string = "";
   public status: number = 200;
   public headers: [string, string][] = [];
@@ -210,8 +218,8 @@ export class ClientSuccess {
   }
 
   public setBody(body: string | JSONSuccess | null): ClientSuccess;
-  public setBody(body: Uint8Array | Deno.Reader | string): ClientSuccess;
-  public setBody(body: Uint8Array | Deno.Reader | string | JSONSuccess | null): ClientSuccess {
+  public setBody(body: Body): ClientSuccess;
+  public setBody(body: Body | JSONSuccess | null): ClientSuccess {
     if (this.mimeType === "") {
       if (body === null || typeof body === 'string') {
         this.mimeType = "text/plain";
@@ -225,7 +233,7 @@ export class ClientSuccess {
     if (body === null) {
       this.body = "null";
     } else if (body instanceof Uint8Array || typeof body === 'string' || typeof body.read === 'function') {
-      this.body = body as Uint8Array | Deno.Reader | string;
+      this.body = body as Body;
     } else {
       this.body = JSON.stringify(body);
     }
@@ -266,7 +274,6 @@ export class ClientSuccess {
       for (const key in this.setcookies) {
         if (this.setcookies.hasOwnProperty(key)) {
           let val = this.setcookies[key] || { value: "", options: { expires: 1000 } };
-          console.log(val);
           cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
         }
       }
@@ -287,12 +294,25 @@ export class ClientSuccess {
   }
 }
 
-export interface ServerParameters {
+export interface ServerParameters extends ServerOptions {
   port: number;
 }
 
 export interface ServerOptions {
   port?: number;
+  viewEngine?: ViewEngine;
+}
+
+export abstract class ViewEngine {
+  constructor(public path: string) { }
+
+  public async render(path: string|string[], data: {[_: string]: any}, req: Request): Promise<void> {
+    const joinPath = join(...((typeof path === 'string') ? [path] : path));
+    const file = await readFileStr(joinPath);
+    return this._render(file, data, req);
+  }
+
+  protected abstract async _render(template: string, data: {[_: string]: any}, req: Request): Promise<void>;
 }
 
 export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
