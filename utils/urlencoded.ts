@@ -47,15 +47,6 @@ export function decodeUrlEncoded(qs: string, options?: {maxKeys?: number, sep?: 
   return res;
 };
 
-export function parseCookieHeader(headerValue: string): {[_: string]: string} {
-  const res: {[_: string]: string} = {};
-  headerValue.split("; ").forEach(cookieStr => {
-    const [key, val] = cookieStr.split("=");
-    res[key] = val;
-  });
-  return res;
-}
-
 export function parseValue(value: string): UrlEncodedValue {
   if (value === 'true')
     return true;

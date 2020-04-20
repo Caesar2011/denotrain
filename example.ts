@@ -1,11 +1,15 @@
-import { Server, Router } from "./mod.ts";
+import { Server, Router, ClientSuccess } from "./mod.ts";
 
-const app = new Server({port: 3000});
+const app = new Server({port: 3001});
 const router = new Router();
 
-router.use((req) => {
-  console.log(req.cookies);
-  return null;
+app.use((req) => {
+  req.response
+    .setCookie("user.session", "qwertz", {maxAge: 60 * 60 * 24})
+    .setCookie("a", "123", {maxAge: 60 * 60 * 24})
+    .setCookie("b", "456", {maxAge: 60 * 60 * 24})
+    //.deleteCookie("qwertz");
+  return;
 });
 
 router.get("/", (req) => {
