@@ -1,4 +1,4 @@
-import { serve, ServerRequest, readFileStr, join } from './deps.ts'
+import { serve, ServerRequest, join, readFileStr } from './deps.ts'
 import { decodeUrlEncoded, UrlEncodedValue, parseValue } from './utils/urlencoded.ts'
 import { parseCookieHeader, generateCookieHeader, CookieOptions } from './utils/cookies.ts'
 
@@ -137,7 +137,9 @@ export class Server extends Router {
       const req = new Request(request, this);
       const result = await this.handle(req);
       if (result !== undefined) {
+        console.log(result);
         const response: ClientSuccess = req.response;
+        console.log("BODY", response.body);
         if (result !== true) {
           response.setBody(result);
         }
@@ -145,6 +147,7 @@ export class Server extends Router {
         return;
       }
     } catch (e) {
+      console.error(e);
       if (e instanceof ClientError) {
         await request.respond({ status: e.statusCode, body: e.message });
         return;
@@ -154,18 +157,7 @@ export class Server extends Router {
     }
     await request.respond({ status: 404, body: `Requested route ${request.url} not found!` });
   }
-
 }
-
-type Body = Uint8Array | Deno.Reader | string;
-type JSONSuccess = {[_: string]: any};
-export type RequestHandler = Router | ((req: Request) => (Promise<RequestHandlerSuccess> | RequestHandlerSuccess));
-export type RequestHandlerSuccess = true|string|JSONSuccess|null|void;
-function instanceOfRequestHandler(object: any): object is RequestHandler {
-  return object instanceof Router || typeof object === 'function';
-}
-
-type HandlerEntry = {regex: RegExp|null, params: string[], method: RequestMethod|null, handler: RequestHandler};
 
 export class Request {
   readonly query: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
@@ -191,11 +183,10 @@ export class Request {
     }
   }
 
-  async render(path: string|string[], data: {[_: string]: any}): Promise<void> {
+  async render(file: string, data: {[_: string]: any} = {}): Promise<void> {
     if (!this.app.options.viewEngine)
       throw ReferenceError("No view engine provided!");
-    this.app.options.viewEngine.render(path, data, this);
-    return;
+    return this.app.options.viewEngine.render(file, data, this);
   }
 }
 
@@ -206,7 +197,6 @@ export class ClientError extends Error {
 }
 
 export class ClientSuccess {
-
   public body: Body | null = null;
   public mimeType: string = "";
   public status: number = 200;
@@ -278,21 +268,28 @@ export class ClientSuccess {
         }
       }
       console.log(cookieHeaders);
-      await req.req.respond({ body: this.body, headers: this.toHeaders([['content-type', this.mimeType], ...cookieHeaders, ...this.headers]), status: this.status });
+      await req.req.respond({ body: this.body, headers: new Headers([['content-type', this.mimeType], ...cookieHeaders, ...this.headers]), status: this.status });
       this._send = true;
     } else {
       throw ReferenceError("Cannot send response without body!");
     }
   }
-
-  private toHeaders(headers: [string, string][]): Headers {
-    const res = new Headers();
-    for (const [key, val] of headers) {
-      res.append(key, val);
-    }
-    return res;
-  }
 }
+
+export abstract class ViewEngine {
+  constructor(public path: string) { }
+
+  public async render(file: string, data: {[_: string]: any}, req: Request): Promise<void> {
+    console.log(window.location.href, this.path, this.path + "/" + file);
+    const joinPath = new URL(this.path + "/" + file, window.location.href).pathname;
+    const f = await readFileStr(joinPath);
+    return this._render(f, data, req);
+  }
+
+  protected abstract async _render(template: string, data: {[_: string]: any}, req: Request): Promise<void>;
+}
+
+
 
 export interface ServerParameters extends ServerOptions {
   port: number;
@@ -303,16 +300,14 @@ export interface ServerOptions {
   viewEngine?: ViewEngine;
 }
 
-export abstract class ViewEngine {
-  constructor(public path: string) { }
+export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
 
-  public async render(path: string|string[], data: {[_: string]: any}, req: Request): Promise<void> {
-    const joinPath = join(...((typeof path === 'string') ? [path] : path));
-    const file = await readFileStr(joinPath);
-    return this._render(file, data, req);
-  }
-
-  protected abstract async _render(template: string, data: {[_: string]: any}, req: Request): Promise<void>;
+type Body = Uint8Array | Deno.Reader | string;
+type JSONSuccess = {[_: string]: any};
+export type RequestHandler = Router | ((req: Request) => (Promise<RequestHandlerSuccess> | RequestHandlerSuccess));
+export type RequestHandlerSuccess = true|string|JSONSuccess|null|void;
+function instanceOfRequestHandler(object: any): object is RequestHandler {
+  return object instanceof Router || typeof object === 'function';
 }
 
-export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
+type HandlerEntry = {regex: RegExp|null, params: string[], method: RequestMethod|null, handler: RequestHandler};
