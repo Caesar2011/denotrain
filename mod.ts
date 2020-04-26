@@ -133,34 +133,31 @@ export class Server extends Router {
   }
 
   private async handleRequest(request: ServerRequest): Promise<void> {
+    const req = new Request(request, this);
     try {
-      const req = new Request(request, this);
       const result = await this.handle(req);
       if (result !== undefined) {
         if (result !== true) {
           req.setBody(result);
         }
-        await req._respond();
-        return;
+      } else {
+        req
+          .setBody(`Requested route ${request.url} not found!`)
+          .setStatus(404);
       }
     } catch (e) {
       console.error(e);
       if (e instanceof ClientError) {
-        await new Request(request, this)
+        req
           .setBody(e.message)
-          .setStatus(e.statusCode)
-          ._respond();
-        return;
+          .setStatus(e.statusCode);
       } else {
-        await new Request(request, this)
+        req
           .setBody("Internal server error!")
-          .setStatus(500)
-          ._respond();
+          .setStatus(500);
       }
     }
-    await new Request(request, this)
-      .setBody(`Requested route ${request.url} not found!`)
-      .setStatus(404)
+    await req
       ._respond();
   }
 }
@@ -175,11 +172,12 @@ export class Request {
   readonly data: {[_: string]: any} = {};
 
 
-  private resBody: Body | null = null;
-  private resMimeType: string = "";
-  private resStatus: number = 200;
-  private resHeaders: [string, string][] = [];
-  private resSetcookies: {[_: string]: {value: string, options: CookieOptions}|null} = {};
+  public resBody: Body | null = null;
+  public resMimeType: string = "";
+  public resStatus: number = 200;
+  public resHeaders: [string, string][] = [];
+  public resSetcookies: {[_: string]: {value: string, options: CookieOptions}|null} = {};
+  public resRespondListener: ((req: Request) => Promise<void>)[] = [];
   private _send: boolean = false;
 
   constructor(public readonly req: ServerRequest, public readonly app: Server) {
@@ -202,11 +200,9 @@ export class Request {
     return this.app.options.viewEngine.render(file, data, this);
   }
 
-  public setBody(body: string | JSONSuccess | null): Request;
-  public setBody(body: Body): Request;
-  public setBody(body: Body | JSONSuccess | null): Request {
+  public setBody(body: Body): Request {
     if (this.resMimeType === "") {
-      if (body === null || typeof body === 'string') {
+      if (typeof body === 'string') {
         this.resMimeType = "text/plain";
       } else if (body instanceof Uint8Array || typeof body.read === 'function') {
         this.resMimeType = "application/octet-stream";
@@ -215,13 +211,7 @@ export class Request {
       }
     }
 
-    if (body === null) {
-      this.resBody = "null";
-    } else if (body instanceof Uint8Array || typeof body === 'string' || typeof body.read === 'function') {
-      this.resBody = body as Body;
-    } else {
-      this.resBody = JSON.stringify(body);
-    }
+    this.resBody = body;
     return this;
   }
 
@@ -250,11 +240,17 @@ export class Request {
     return this;
   }
 
+  public addRespondListener(cb: (res: Request) => Promise<void>): Request {
+    this.resRespondListener.push(cb);
+    return this;
+  }
+
   /** @internal */
   public async _respond(): Promise<void> {
     if (this._send) 
       throw ReferenceError("Already send!");
     if (this.resBody !== null) {
+      await Promise.all(this.resRespondListener.map(val => val(this)));
       const cookieHeaders: [string, string][] = [];
       for (const key in this.resSetcookies) {
         if (this.resSetcookies.hasOwnProperty(key)) {
@@ -262,7 +258,16 @@ export class Request {
           cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
         }
       }
-      await this.req.respond({ body: this.resBody, headers: new Headers([['content-type', this.resMimeType], ...cookieHeaders, ...this.resHeaders]), status: this.resStatus });
+
+      const body: string|Uint8Array|Deno.Reader = (
+          this.resBody instanceof Uint8Array ||
+          typeof this.resBody === 'string' ||
+          typeof this.resBody.read === 'function'
+        )
+        ? this.resBody as string|Uint8Array|Deno.Reader
+        : JSON.stringify(this.resBody);
+
+      await this.req.respond({ body, headers: new Headers([['content-type', this.resMimeType], ...cookieHeaders, ...this.resHeaders]), status: this.resStatus });
       this._send = true;
     } else {
       throw ReferenceError("Cannot send response without body!");
@@ -302,10 +307,10 @@ export interface ServerOptions {
 
 export type RequestMethod = "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
 
-type Body = Uint8Array | Deno.Reader | string;
+type Body = Uint8Array | Deno.Reader | string | JSONSuccess;
 type JSONSuccess = {[_: string]: any};
 export type RequestHandler = Router | ((req: Request) => (Promise<RequestHandlerSuccess> | RequestHandlerSuccess));
-export type RequestHandlerSuccess = true|string|JSONSuccess|null|void;
+export type RequestHandlerSuccess = true|Body|void;
 function instanceOfRequestHandler(object: any): object is RequestHandler {
   return object instanceof Router || typeof object === 'function';
 }
