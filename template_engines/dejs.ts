@@ -3,7 +3,7 @@ import { ViewEngine, Request } from "../mod.ts";
 
 export class DejsEngine extends ViewEngine {
   protected async _render(template: string, data: { [_: string]: any; }, req: Request): Promise<void> {
-    req.response
+    req
       .setBody(await render(template, data))
       .setMimeType("text/html");
   }

@@ -137,25 +137,31 @@ export class Server extends Router {
       const req = new Request(request, this);
       const result = await this.handle(req);
       if (result !== undefined) {
-        console.log(result);
-        const response: ClientSuccess = req.response;
-        console.log("BODY", response.body);
         if (result !== true) {
-          response.setBody(result);
+          req.setBody(result);
         }
-        await response._respond(req);
+        await req._respond();
         return;
       }
     } catch (e) {
       console.error(e);
       if (e instanceof ClientError) {
-        await request.respond({ status: e.statusCode, body: e.message });
+        await new Request(request, this)
+          .setBody(e.message)
+          .setStatus(e.statusCode)
+          ._respond();
         return;
       } else {
-        await request.respond({ status: 500, body: "Internal server error!" });
+        await new Request(request, this)
+          .setBody("Internal server error!")
+          .setStatus(500)
+          ._respond();
       }
     }
-    await request.respond({ status: 404, body: `Requested route ${request.url} not found!` });
+    await new Request(request, this)
+      .setBody(`Requested route ${request.url} not found!`)
+      .setStatus(404)
+      ._respond();
   }
 }
 
@@ -166,8 +172,15 @@ export class Request {
   readonly cookies: {[_: string]: string} = {};
   readonly path: string = "";
   relPath: string = "";
-  readonly response: ClientSuccess = new ClientSuccess();
   readonly data: {[_: string]: any} = {};
+
+
+  private resBody: Body | null = null;
+  private resMimeType: string = "";
+  private resStatus: number = 200;
+  private resHeaders: [string, string][] = [];
+  private resSetcookies: {[_: string]: {value: string, options: CookieOptions}|null} = {};
+  private _send: boolean = false;
 
   constructor(public readonly req: ServerRequest, public readonly app: Server) {
     const regex = /^(.*?)(\?(.*))?$/;
@@ -188,91 +201,78 @@ export class Request {
       throw ReferenceError("No view engine provided!");
     return this.app.options.viewEngine.render(file, data, this);
   }
+
+  public setBody(body: string | JSONSuccess | null): Request;
+  public setBody(body: Body): Request;
+  public setBody(body: Body | JSONSuccess | null): Request {
+    if (this.resMimeType === "") {
+      if (body === null || typeof body === 'string') {
+        this.resMimeType = "text/plain";
+      } else if (body instanceof Uint8Array || typeof body.read === 'function') {
+        this.resMimeType = "application/octet-stream";
+      } else {
+        this.resMimeType = "application/json";
+      }
+    }
+
+    if (body === null) {
+      this.resBody = "null";
+    } else if (body instanceof Uint8Array || typeof body === 'string' || typeof body.read === 'function') {
+      this.resBody = body as Body;
+    } else {
+      this.resBody = JSON.stringify(body);
+    }
+    return this;
+  }
+
+  public setMimeType(mimeType: string): Request {
+    this.resMimeType = mimeType;
+    return this;
+  }
+
+  public setStatus(status: number): Request {
+    this.resStatus = status;
+    return this;
+  }
+
+  public addHeader(key: string, value: string): Request {
+    this.resHeaders.push([key, value]);
+    return this;
+  }
+
+  public deleteCookie(key: string): Request {
+    this.resSetcookies[key] = null;
+    return this;
+  }
+
+  public setCookie(key: string, value: string, options: CookieOptions = {}): Request {
+    this.resSetcookies[key] = {value, options};
+    return this;
+  }
+
+  /** @internal */
+  public async _respond(): Promise<void> {
+    if (this._send) 
+      throw ReferenceError("Already send!");
+    if (this.resBody !== null) {
+      const cookieHeaders: [string, string][] = [];
+      for (const key in this.resSetcookies) {
+        if (this.resSetcookies.hasOwnProperty(key)) {
+          let val = this.resSetcookies[key] || { value: "", options: { expires: 1000 } };
+          cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
+        }
+      }
+      await this.req.respond({ body: this.resBody, headers: new Headers([['content-type', this.resMimeType], ...cookieHeaders, ...this.resHeaders]), status: this.resStatus });
+      this._send = true;
+    } else {
+      throw ReferenceError("Cannot send response without body!");
+    }
+  }
 }
 
 export class ClientError extends Error {
   constructor(public statusCode: number, public message: string) {
     super(message);
-  }
-}
-
-export class ClientSuccess {
-  public body: Body | null = null;
-  public mimeType: string = "";
-  public status: number = 200;
-  public headers: [string, string][] = [];
-  private setcookies: {[_: string]: {value: string, options: CookieOptions}|null} = {};
-  private _send: boolean = false;
-  public get send(): boolean {
-    return this._send;
-  }
-
-  public setBody(body: string | JSONSuccess | null): ClientSuccess;
-  public setBody(body: Body): ClientSuccess;
-  public setBody(body: Body | JSONSuccess | null): ClientSuccess {
-    if (this.mimeType === "") {
-      if (body === null || typeof body === 'string') {
-        this.mimeType = "text/plain";
-      } else if (body instanceof Uint8Array || typeof body.read === 'function') {
-        this.mimeType = "application/octet-stream";
-      } else {
-        this.mimeType = "application/json";
-      }
-    }
-
-    if (body === null) {
-      this.body = "null";
-    } else if (body instanceof Uint8Array || typeof body === 'string' || typeof body.read === 'function') {
-      this.body = body as Body;
-    } else {
-      this.body = JSON.stringify(body);
-    }
-    return this;
-  }
-
-  public setMimeType(mimeType: string): ClientSuccess {
-    this.mimeType = mimeType;
-    return this;
-  }
-
-  public setStatus(status: number): ClientSuccess {
-    this.status = status;
-    return this;
-  }
-
-  public addHeader(key: string, value: string): ClientSuccess {
-    this.headers.push([key, value]);
-    return this;
-  }
-
-  public deleteCookie(key: string): ClientSuccess {
-    this.setcookies[key] = null;
-    return this;
-  }
-
-  public setCookie(key: string, value: string, options: CookieOptions = {}): ClientSuccess {
-    this.setcookies[key] = {value, options};
-    return this;
-  }
-
-  /** @internal */
-  public async _respond(req: Request) {
-    if (this.send) 
-      throw ReferenceError("Already send!");
-    if (this.body !== null) {
-      const cookieHeaders: [string, string][] = [];
-      for (const key in this.setcookies) {
-        if (this.setcookies.hasOwnProperty(key)) {
-          let val = this.setcookies[key] || { value: "", options: { expires: 1000 } };
-          cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
-        }
-      }
-      console.log(cookieHeaders);
-      await req.req.respond({ body: this.body, headers: new Headers([['content-type', this.mimeType], ...cookieHeaders, ...this.headers]), status: this.status });
-      this._send = true;
-    } else {
-      throw ReferenceError("Cannot send response without body!");
-    }
   }
 }
 
