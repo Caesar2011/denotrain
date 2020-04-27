@@ -1,4 +1,4 @@
-import { serve, ServerRequest, join, readFileStr } from './deps.ts'
+import { serve, ServerRequest, contentType, extname, readFileStr } from './deps.ts'
 import { decodeUrlEncoded, UrlEncodedValue, parseValue } from './utils/urlencoded.ts'
 import { parseCookieHeader, generateCookieHeader, CookieOptions } from './utils/cookies.ts'
 
@@ -200,6 +200,19 @@ export class Request {
     return this.app.options.viewEngine.render(file, data, this);
   }
 
+  async file(filePath: string): Promise<boolean> {
+    const contType: any = contentType(extname(filePath));
+    const fileInfo = await Deno.stat(filePath);
+    if (!fileInfo.isFile) {
+        return false;
+    }
+    const file = await Deno.readFile(filePath);
+    this
+      .setBody(file)
+      .setMimeType(contType);
+    return true;
+  }
+
   public setBody(body: Body): Request {
     if (this.resMimeType === "") {
       if (typeof body === 'string') {
@@ -285,7 +298,6 @@ export abstract class ViewEngine {
   constructor(public path: string) { }
 
   public async render(file: string, data: {[_: string]: any}, req: Request): Promise<void> {
-    console.log(window.location.href, this.path, this.path + "/" + file);
     const joinPath = new URL(this.path + "/" + file, window.location.href).pathname;
     const f = await readFileStr(joinPath);
     return this._render(f, data, req);
