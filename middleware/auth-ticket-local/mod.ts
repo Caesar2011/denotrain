@@ -1,5 +1,5 @@
-import { TicketAuthenticator, UserProvided, UserRegister } from "./auth.ts";
-import { SHA256 } from "../deps.ts";
+import { TicketAuthenticator, UserProvided, UserRegister } from "../auth/mod.ts";
+import { SHA256 } from "./deps.ts";
 
 export class LocalAuthenticator implements TicketAuthenticator {
 

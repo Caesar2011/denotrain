@@ -1,4 +1,4 @@
-import { TicketStorage, User } from "./auth.ts";
+import { TicketStorage, User } from "../auth/mod.ts";
 
 export class LocalStorage implements TicketStorage {
 

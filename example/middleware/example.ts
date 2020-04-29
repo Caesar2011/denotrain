@@ -1,15 +1,15 @@
-import { Server, Router } from "../../mod.ts";
-import { TrainStatic } from "../../middleware/static.ts";
-import { TrainLogger } from "../../middleware/logger.ts";
+import { Application, Router } from "../../mod.ts";
+import { TrainStatic } from "../../middleware/static/mod.ts";
+import { TrainLogger } from "../../middleware/logger/mod.ts";
 
-const app = new Server({port: 3001});
-const router = new Router();
+const app = new Application({port: 3001});
 
 app.use('/static', new TrainStatic('./public'));
 app.use(new TrainLogger());
 
-app.get('/', (req) => {
-  req.setMimeType("text/html");
+app.get('/', (ctx) => {
+  ctx.res
+    .setMimeType("text/html");
   return `
   <html>
     <head><meta charset="utf8"></head>
