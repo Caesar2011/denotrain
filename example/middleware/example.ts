@@ -4,8 +4,8 @@ import { TrainLogger } from "../../middleware/logger/mod.ts";
 
 const app = new Application({port: 3001});
 
-app.use('/static', new TrainStatic('./public'));
 app.use(new TrainLogger());
+app.use('/static', new TrainStatic('./public'));
 
 app.get('/', (ctx) => {
   ctx.res
