@@ -1,9 +1,8 @@
 import { TicketStorage, User } from "../auth/mod.ts";
 
 export class LocalStorage implements TicketStorage {
-
-  private users: {[ticket: string]: {updated: number, user: User}} = {};
-  private lifespan = 24*60*60 * 1000;
+  private users: { [ticket: string]: { updated: number; user: User } } = {};
+  private lifespan = 24 * 60 * 60 * 1000;
 
   setTicketLifespan(sec: number): void {
     this.lifespan = sec * 1000;
@@ -24,12 +23,11 @@ export class LocalStorage implements TicketStorage {
   async upsertTicket(ticket: string, user: User): Promise<void> {
     this.users[ticket] = {
       updated: Date.now(),
-      user
-    }
+      user,
+    };
   }
 
   async invalidateTicket(ticket: string): Promise<void> {
     delete this.users[ticket];
   }
-  
 }

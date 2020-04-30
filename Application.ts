@@ -1,17 +1,20 @@
-import { serve, ServerRequest } from './deps.ts';
-import { Router } from './Router.ts';
-import { Context } from './Context.ts';
-import { ViewEngine } from './ViewEngine.ts';
-import { ClientError } from './ClientError.ts';
+import { serve, ServerRequest } from "./deps.ts";
+import { Router } from "./Router.ts";
+import { Context } from "./Context.ts";
+import { ViewEngine } from "./ViewEngine.ts";
+import { ClientError } from "./ClientError.ts";
 
-export class Application<S extends object = { [key: string]: any }, R extends object = { [key: string]: any }> extends Router<S, R> {
+export class Application<
+  S extends object = { [key: string]: any },
+  R extends object = { [key: string]: any },
+> extends Router<S, R> {
   public options: AppParameters;
   public data: S = {} as S;
 
   constructor(options: AppOptions) {
     super();
-    const defs = {port: 3000};
-    this.options = {...defs, ...options};
+    const defs = { port: 3000 };
+    this.options = { ...defs, ...options };
   }
 
   public async run() {

@@ -1,13 +1,19 @@
-export function parseCookieHeader(headerValue: string): {[_: string]: string} {
-  const res: {[_: string]: string} = {};
-  headerValue.split("; ").forEach(cookieStr => {
+export function parseCookieHeader(
+  headerValue: string,
+): { [_: string]: string } {
+  const res: { [_: string]: string } = {};
+  headerValue.split("; ").forEach((cookieStr) => {
     const [key, val] = cookieStr.split("=");
     res[key] = val;
   });
   return res;
 }
 
-export function generateCookieHeader(key: string, value: string, options: CookieOptions): [string, string] {
+export function generateCookieHeader(
+  key: string,
+  value: string,
+  options: CookieOptions,
+): [string, string] {
   if (options.hasOwnProperty("expires")) {
     value += "; Expires=" + new Date(options.expires || 0).toUTCString();
   }
@@ -39,5 +45,5 @@ export interface CookieOptions {
   path?: string;
   secure?: boolean;
   httpOnly?: boolean;
-  sameSite?: "Strict"|"Lax"|"None";
+  sameSite?: "Strict" | "Lax" | "None";
 }

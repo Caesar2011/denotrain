@@ -1,5 +1,5 @@
 import { Router } from "../../mod.ts";
-import {red, yellow, cyan, green} from "./deps.ts";
+import { red, yellow, cyan, green } from "./deps.ts";
 
 export class TrainLogger extends Router {
   constructor() {

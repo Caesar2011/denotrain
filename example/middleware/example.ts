@@ -2,12 +2,12 @@ import { Application, Router } from "../../mod.ts";
 import { TrainStatic } from "../../middleware/static/mod.ts";
 import { TrainLogger } from "../../middleware/logger/mod.ts";
 
-const app = new Application({port: 3001});
+const app = new Application({ port: 3001 });
 
 app.use(new TrainLogger());
-app.use('/static', new TrainStatic('./public'));
+app.use("/static", new TrainStatic("./public"));
 
-app.get('/', (ctx) => {
+app.get("/", (ctx) => {
   ctx.res
     .setMimeType("text/html");
   return `
