@@ -29,10 +29,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     return this.add(path, null, ...handlers);
   }
 
-  public get(
-    path: string | RegExp | null,
-    ...handlers: RequestHandler<S, R>[]
-  ): Router<S, R>;
+  public get(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public get(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public get(
     path: Path | RequestHandler<S, R>,
