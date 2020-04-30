@@ -27,6 +27,7 @@ export class Application<
 
   private async handleRequest(request: ServerRequest): Promise<void> {
     const ctx = new Context<S, R>(request, this);
+    await ctx.req.init();
     try {
       const result = await this.handle(ctx);
       if (result !== undefined) {

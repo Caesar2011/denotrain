@@ -4,17 +4,24 @@ import { parseCookieHeader } from "./utils/cookies.ts";
 
 export class Request {
   public readonly original: ServerRequest;
-  readonly query: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
+  query: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
   param: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
-  readonly body: { [_: string]: any } = {};
-  readonly cookies: { [_: string]: string } = {};
-  readonly path: string = "";
+  body: { [_: string]: any } = {};
+  cookies: { [_: string]: string } = {};
+  path: string = "";
   relPath: string = "";
 
   constructor(request: ServerRequest) {
     this.original = request;
+  }
+
+  public async init() {
+    return this.parseInit();
+  }
+
+  public async parseInit() {
     const regex = /^(.*?)(\?(.*))?$/;
-    const [_, regexPath, __, regexQuery] = request.url.match(regex) ||
+    const [_, regexPath, __, regexQuery] = this.original.url.match(regex) ||
       [undefined, undefined, undefined, undefined];
 
     // Parse Path
@@ -25,13 +32,24 @@ export class Request {
     this.query = decodeUrlEncoded(regexQuery || "");
 
     // Parse Cookies
-    for (const [key, val] of request.headers.entries()) {
+    let contentType: string|null = null;
+    for (const [key, val] of this.original.headers.entries()) {
+      console.log(key, val);
       if (key === "cookie") {
         this.cookies = { ...this.cookies, ...parseCookieHeader(val) };
+      }
+      if (key === "content-type") {
+        contentType = val;
       }
     }
 
     // Parse Body
-    // TODO
+    if (contentType?.toLowerCase().includes("application/json")) {
+      this.body = JSON.parse(new TextDecoder().decode(await Deno.readAll(this.original.body)));
+    }
+    if (contentType?.toLowerCase().includes("application/x-www-form-urlencoded")) {
+      this.body = decodeUrlEncoded(new TextDecoder().decode(await Deno.readAll(this.original.body)));
+    }
+    console.log(this.body);
   }
 }

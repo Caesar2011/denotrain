@@ -5,17 +5,13 @@ import { Obj } from "./utils/object.ts";
 export class Router<S extends object = Obj, R extends object = Obj> {
   private handlers: HandlerEntry<S, R>[] = [];
 
-  public add(
-    path: Path | RequestHandler<S, R>,
-    method: string | null,
-    ...handlers: RequestHandler<S, R>[]
-  ): Router<S, R> {
+  public add(path: Path | RequestHandler<S, R>, method: RequestMethod | null, ...handlers: RequestHandler<S, R>[]): Router<S, R> {
     if (instanceOfRequestHandler<S, R>(path)) {
-      this.handlers.push(this.generateHandlerEntry(null, null, path));
+      this.handlers.push(this.generateHandlerEntry(null, method, path));
       path = null;
     }
     for (const handler of handlers) {
-      this.handlers.push(this.generateHandlerEntry(path, null, handler));
+      this.handlers.push(this.generateHandlerEntry(path, method, handler));
     }
     return this;
   }
@@ -144,6 +140,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     if (!handler.regex) {
       return { newSubPath: req.relPath || "/", addParams: {} };
     }
+    console.log(handler.method, req.original.method);
     if (handler.method && handler.method !== req.original.method) {
       return null;
     }

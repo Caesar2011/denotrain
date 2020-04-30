@@ -16,7 +16,7 @@ export abstract class ViewEngine {
     return this._render(f, data, ctx);
   }
 
-  protected async abstract _render(
+  protected abstract _render(
     template: string,
     data: { [_: string]: any },
     ctx: Context<any, any>,
