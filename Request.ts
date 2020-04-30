@@ -5,7 +5,7 @@ import { parseCookieHeader } from './utils/cookies.ts';
 export class Request {
   public readonly original: ServerRequest;
   readonly query: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
-  readonly param: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
+  param: {[_: string]: UrlEncodedValue|UrlEncodedValue[]} = {};
   readonly body: {[_: string]: any} = {};
   readonly cookies: {[_: string]: string} = {};
   readonly path: string = "";

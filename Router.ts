@@ -1,5 +1,5 @@
 import { Context } from "./Context.ts";
-import { parseValue } from './utils/urlencoded.ts';
+import { parseValue, UrlEncodedValue } from './utils/urlencoded.ts';
 import { Obj } from './utils/object.ts';
 
 export class Router<S extends object = Obj, R extends object = Obj> {
@@ -62,16 +62,22 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     const req = ctx.req;
     let result: RequestHandlerSuccess = undefined;
     for (const handler of this.handlers) {
-      const relPath: string|null = this.matchPath(ctx, handler);
-      const oldRelPath: string = req.relPath;
-      if (relPath) {
-        req.relPath = relPath;
+      const matchedPath = this.matchPath(ctx, handler);
+      if (matchedPath) {
+        // Update parameters
+        const oldRelPath: string = req.relPath;
+        const oldParams = req.param;
+        req.relPath = matchedPath.newSubPath;
+        req.param = {...req.param, ...matchedPath.addParams};
+        // Handle
         if (handler.handler instanceof Router) {
           result = await handler.handler.handle(ctx);
         } else {
           result = await handler.handler(ctx);
         }
+        // Restore
         req.relPath = oldRelPath;
+        req.param = oldParams;
         if (result !== undefined) {
           return result;
         }
@@ -97,21 +103,22 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     }
   }
 
-  private matchPath(ctx: Context<S, R>, handler: HandlerEntry<S, R>): string|null {
+  private matchPath(ctx: Context<S, R>, handler: HandlerEntry<S, R>): {newSubPath: string, addParams: {[_: string]: UrlEncodedValue}}|null {
     const req = ctx.req;
     if (!handler.regex) {
-      return req.relPath || "/";
+      return {newSubPath: req.relPath || "/", addParams: {}};
     }
     if (handler.method && handler.method !== req.original.method)
       return null;
     const match = req.relPath.match(handler.regex);
     if (match) {
-      req.relPath.substring(match[0].length) || "/";
-      for (var member in req.param) delete req.param[member];
+      const newSubPath = req.relPath.substring(match[0].length) || "/";
+      const addParams: {[_: string]: UrlEncodedValue} = {};
       for (let i = 0; i < handler.params.length; i++) {
-        req.param[handler.params[i]] = parseValue(match[i+1]);
+        addParams[handler.params[i]] = parseValue(match[i+1]);
       }
-      return req.relPath.substring(match[0].length) || "/";;
+
+      return {newSubPath, addParams};
     } else {
       return null;
     }
