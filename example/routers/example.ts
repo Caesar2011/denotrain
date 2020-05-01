@@ -26,11 +26,10 @@ app.get("/", (ctx) => {
 app.post("/", async (ctx) => {
   return ctx.req.body;
 });
+
 app.use("/admin", router);
 app.get("/:id", (ctx) => {
   return "Hello World with ID: " + ctx.req.param.id;
 });
-
-
 
 app.run();

@@ -1,5 +1,5 @@
 import { serve, ServerRequest } from "./deps.ts";
-import { Router } from "./Router.ts";
+import { Router, LifecycleHook } from "./Router.ts";
 import { Context } from "./Context.ts";
 import { ViewEngine } from "./ViewEngine.ts";
 import { ClientError } from "./ClientError.ts";
@@ -25,20 +25,27 @@ export class Application<
     }
   }
 
+  private async runHook(ctx: Context<S, R>, lifecycle: LifecycleHook) {
+    const result = await this.handle(ctx, lifecycle);
+    if (
+      result === undefined && lifecycle == "onHandle" && ctx.res.body !== null
+    ) {
+      ctx.res
+        .setBody(`Requested route ${ctx.req.original.url} not found!`)
+        .setStatus(404);
+    } else if (result !== true && result !== undefined) {
+      ctx.res.setBody(result);
+    }
+  }
+
   private async handleRequest(request: ServerRequest): Promise<void> {
     const ctx = new Context<S, R>(request, this);
+    await this.runHook(ctx, "onRequest");
+    await this.runHook(ctx, "preParsing");
     await ctx.req.init();
+    await this.runHook(ctx, "preHandling");
     try {
-      const result = await this.handle(ctx);
-      if (result !== undefined) {
-        if (result !== true) {
-          ctx.res.setBody(result);
-        }
-      } else {
-        ctx.res
-          .setBody(`Requested route ${request.url} not found!`)
-          .setStatus(404);
-      }
+      await this.runHook(ctx, "onHandle");
     } catch (e) {
       console.error(e);
       if (e instanceof ClientError) {
@@ -51,8 +58,11 @@ export class Application<
           .setStatus(500);
       }
     }
-    await ctx.res
-      ._respond();
+    await this.runHook(ctx, "postHandling");
+    await ctx.res._prepareResponse();
+    await this.runHook(ctx, "preSending");
+    await ctx.res._respond();
+    await this.runHook(ctx, "postSending");
   }
 }
 

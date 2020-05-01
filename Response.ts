@@ -1,4 +1,9 @@
-import { contentType, extname, ServerRequest } from "./deps.ts";
+import {
+  contentType,
+  extname,
+  ServerRequest,
+  Response as DenoResponse,
+} from "./deps.ts";
 import { Body } from "./Router.ts";
 import { generateCookieHeader, CookieOptions } from "./utils/cookies.ts";
 import { Context } from "./Context.ts";
@@ -11,7 +16,7 @@ export class Response {
   public setCookies: {
     [_: string]: { value: string; options: CookieOptions } | null;
   } = {};
-  public respondListener: ((req: Response) => Promise<void>)[] = [];
+  public response: DenoResponse | undefined;
   private _sent: boolean = false;
 
   constructor(private ctx: Context<any, any>) {}
@@ -82,9 +87,41 @@ export class Response {
     return this;
   }
 
-  public addRespondListener(cb: (res: Response) => Promise<void>): Response {
-    this.respondListener.push(cb);
-    return this;
+  /** @internal */
+  public async _prepareResponse(): Promise<void> {
+    const cookieHeaders: [string, string][] = [];
+    for (const key in this.setCookies) {
+      if (this.setCookies.hasOwnProperty(key)) {
+        let val = this.setCookies[key] ||
+          { value: "", options: { expires: 1000 } };
+        cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
+      }
+    }
+
+    const body: string | Uint8Array | Deno.Reader | undefined = (
+      this.body === null ||
+      this.body instanceof Uint8Array ||
+      typeof this.body === "string" ||
+      typeof this.body.read === "function"
+    )
+      ? (this.body ?? undefined) as
+        | string
+        | Uint8Array
+        | Deno.Reader
+        | undefined
+      : JSON.stringify(this.body);
+
+    this.response = {
+      body,
+      headers: new Headers(
+        [
+          ["content-type", this.mimeType],
+          ...cookieHeaders,
+          ...this.headers,
+        ],
+      ),
+      status: this.status,
+    };
   }
 
   /** @internal */
@@ -92,38 +129,8 @@ export class Response {
     if (this._sent) {
       throw ReferenceError("Already send!");
     }
-    if (this.body !== null) {
-      await Promise.all(this.respondListener.map((val) => val(this)));
-      const cookieHeaders: [string, string][] = [];
-      for (const key in this.setCookies) {
-        if (this.setCookies.hasOwnProperty(key)) {
-          let val = this.setCookies[key] ||
-            { value: "", options: { expires: 1000 } };
-          cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
-        }
-      }
-
-      const body: string | Uint8Array | Deno.Reader = (
-        this.body instanceof Uint8Array ||
-        typeof this.body === "string" ||
-        typeof this.body.read === "function"
-      )
-        ? this.body as string | Uint8Array | Deno.Reader
-        : JSON.stringify(this.body);
-
-      await this.ctx.req.original.respond(
-        {
-          body,
-          headers: new Headers(
-            [
-              ["content-type", this.mimeType],
-              ...cookieHeaders,
-              ...this.headers,
-            ],
-          ),
-          status: this.status,
-        },
-      );
+    if (this.response) {
+      await this.ctx.req.original.respond(this.response);
       this._sent = true;
     } else {
       throw ReferenceError("Cannot send response without body!");

@@ -1,107 +1,162 @@
 import { Context } from "./Context.ts";
 import { parseValue, UrlEncodedValue } from "./utils/urlencoded.ts";
 import { Obj } from "./utils/object.ts";
+import { Application } from "./Application.ts";
 
 export class Router<S extends object = Obj, R extends object = Obj> {
   private handlers: HandlerEntry<S, R>[] = [];
 
-  public add(path: Path | RequestHandler<S, R>, method: RequestMethod | null, ...handlers: RequestHandler<S, R>[]): Router<S, R> {
-    if (instanceOfRequestHandler<S, R>(path)) {
-      this.handlers.push(this.generateHandlerEntry(null, method, path));
-      path = null;
+  public add(
+    obj: RequestOptions | Path | RequestHandler<S, R>,
+    method: RequestMethod | null,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R> {
+    let nLifecicle: LifecycleHook | undefined = undefined;
+    let nPath: Path = null;
+    if (instanceOfRequestHandler<S, R>(obj)) {
+      handlers.unshift(obj);
+    } else if (instanceOfRequestOptions(obj)) {
+      if (obj.lifecycle !== undefined) {
+        nLifecicle = obj.lifecycle;
+      }
+      if (obj.path !== undefined) {
+        nPath = obj.path;
+      }
+    } else {
+      nPath = obj;
     }
+    let cycle: LifecycleHook;
     for (const handler of handlers) {
-      this.handlers.push(this.generateHandlerEntry(path, method, handler));
+      if (nLifecicle !== undefined) {
+        cycle = nLifecicle;
+      } else if (handler instanceof Router) {
+        cycle = null;
+      } else {
+        cycle = "onHandle";
+      }
+      this.handlers.push(
+        this.generateHandlerEntry(nPath, cycle, method, handler),
+      );
     }
     return this;
   }
 
+  public use(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public use(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public use(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public use(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, null, ...handlers);
   }
 
+  public get(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public get(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public get(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public get(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "GET", ...handlers);
   }
 
+  public head(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
+  public head(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public head(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public head(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public head(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "HEAD", ...handlers);
   }
 
+  public post(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public post(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public post(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public post(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "POST", ...handlers);
   }
 
+  public put(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public put(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public put(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public put(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "PUT", ...handlers);
   }
 
+  public delete(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public delete(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public delete(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public delete(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "DELETE", ...handlers);
   }
 
+  public patch(
+    path: RequestOptions,
+    ...handlers: RequestHandler<S, R>[]
+  ): Router<S, R>;
   public patch(path: Path, ...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public patch(...handlers: RequestHandler<S, R>[]): Router<S, R>;
   public patch(
-    path: Path | RequestHandler<S, R>,
+    path: RequestOptions | Path | RequestHandler<S, R>,
     ...handlers: RequestHandler<S, R>[]
   ): Router<S, R> {
     return this.add(path, "PATCH", ...handlers);
   }
 
-  public async handle(ctx: Context<S, R>): Promise<RequestHandlerSuccess> {
+  public async handle(
+    ctx: Context<S, R>,
+    lifecycle: LifecycleHook,
+  ): Promise<RequestHandlerSuccess> {
     const req = ctx.req;
     let result: RequestHandlerSuccess = undefined;
-    for (const handler of this.handlers) {
-      const matchedPath = this.matchPath(ctx, handler);
-      if (matchedPath) {
-        // Update parameters
-        const oldRelPath: string = req.relPath;
-        const oldParams = req.param;
-        req.relPath = matchedPath.newSubPath;
-        req.param = { ...req.param, ...matchedPath.addParams };
-        // Handle
-        if (handler.handler instanceof Router) {
-          result = await handler.handler.handle(ctx);
-        } else {
-          result = await handler.handler(ctx);
-        }
-        // Restore
-        req.relPath = oldRelPath;
-        req.param = oldParams;
-        if (result !== undefined) {
-          return result;
-        }
+
+    for (const iter of this.handlerIterator(ctx, lifecycle)) {
+      // Update parameters
+      const oldRelPath: string = req.relPath;
+      const oldParams = req.param;
+      req.relPath = iter.newSubPath;
+      req.param = { ...req.param, ...iter.addParams };
+      // Handle
+      if (iter.handler instanceof Router) {
+        result = await iter.handler.handle(ctx, lifecycle);
+      } else {
+        result = await iter.handler(ctx);
+      }
+      // Restore
+      req.relPath = oldRelPath;
+      req.param = oldParams;
+      if (result !== undefined) {
+        return result;
       }
     }
     return undefined;
@@ -109,9 +164,11 @@ export class Router<S extends object = Obj, R extends object = Obj> {
 
   private generateHandlerEntry(
     path: Path,
+    lifecycle: LifecycleHook | null,
     method: RequestMethod | null,
     handler: RequestHandler<S, R>,
   ): HandlerEntry<S, R> {
+    lifecycle = lifecycle;
     if (typeof path == "string") {
       const paramMatches = path.matchAll(/\/:([a-z]+)/g);
       const params: string[] = [];
@@ -124,9 +181,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);
-      return { regex, params, method, handler };
+      return { regex, lifecycle, params, method, handler };
     } else {
-      return { regex: path, params: [], method, handler };
+      return { regex: path, lifecycle, params: [], method, handler };
     }
   }
 
@@ -140,7 +197,6 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     if (!handler.regex) {
       return { newSubPath: req.relPath || "/", addParams: {} };
     }
-    console.log(handler.method, req.original.method);
     if (handler.method && handler.method !== req.original.method) {
       return null;
     }
@@ -157,6 +213,21 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       return null;
     }
   }
+
+  private *handlerIterator(ctx: Context<S, R>, lifecycle: LifecycleHook) {
+    for (const handler of this.handlers) {
+      if (handler.lifecycle === null || handler.lifecycle === lifecycle) {
+        const matchedPath = this.matchPath(ctx, handler);
+        if (matchedPath) {
+          yield {
+            newSubPath: matchedPath.newSubPath,
+            addParams: matchedPath.addParams,
+            handler: handler.handler,
+          };
+        }
+      }
+    }
+  }
 }
 
 export type RequestMethod =
@@ -169,6 +240,16 @@ export type RequestMethod =
   | "OPTIONS"
   | "TRACE"
   | "PATCH";
+
+export type LifecycleHook =
+  | "onRequest"
+  | "preParsing"
+  | "preHandling"
+  | "onHandle"
+  | "postHandling"
+  | "preSending"
+  | "postSending"
+  | null;
 
 export type Body = Uint8Array | Deno.Reader | string | JSONSuccess;
 
@@ -187,12 +268,20 @@ function instanceOfRequestHandler<
   return object instanceof Router || typeof object === "function";
 }
 
+function instanceOfRequestOptions(object: any): object is RequestOptions {
+  return typeof object === "object" &&
+    (object.hasOwnProperty("path") || object.hasOwnProperty("lifecycle"));
+}
+
 type Path = string | RegExp | null;
+
+type RequestOptions = { path?: string; lifecycle?: LifecycleHook };
 
 type JSONSuccess = { [_: string]: any };
 
 interface HandlerEntry<S extends object = Obj, R extends object = Obj> {
   regex: RegExp | null;
+  lifecycle: LifecycleHook;
   params: string[];
   method: RequestMethod | null;
   handler: RequestHandler<S, R>;

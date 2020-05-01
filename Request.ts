@@ -32,9 +32,8 @@ export class Request {
     this.query = decodeUrlEncoded(regexQuery || "");
 
     // Parse Cookies
-    let contentType: string|null = null;
+    let contentType: string | null = null;
     for (const [key, val] of this.original.headers.entries()) {
-      console.log(key, val);
       if (key === "cookie") {
         this.cookies = { ...this.cookies, ...parseCookieHeader(val) };
       }
@@ -45,11 +44,16 @@ export class Request {
 
     // Parse Body
     if (contentType?.toLowerCase().includes("application/json")) {
-      this.body = JSON.parse(new TextDecoder().decode(await Deno.readAll(this.original.body)));
+      this.body = JSON.parse(
+        new TextDecoder().decode(await Deno.readAll(this.original.body)),
+      );
     }
-    if (contentType?.toLowerCase().includes("application/x-www-form-urlencoded")) {
-      this.body = decodeUrlEncoded(new TextDecoder().decode(await Deno.readAll(this.original.body)));
+    if (
+      contentType?.toLowerCase().includes("application/x-www-form-urlencoded")
+    ) {
+      this.body = decodeUrlEncoded(
+        new TextDecoder().decode(await Deno.readAll(this.original.body)),
+      );
     }
-    console.log(this.body);
   }
 }
