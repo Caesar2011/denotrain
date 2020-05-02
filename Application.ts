@@ -13,6 +13,7 @@ export class Application<
 
   constructor(options: AppOptions) {
     super();
+    this.app = this;
     const defs = { port: 3000 };
     this.options = { ...defs, ...options };
   }
@@ -31,7 +32,9 @@ export class Application<
       result === undefined && lifecycle == "onHandle" && ctx.res.body === null
     ) {
       ctx.res
-        .setBody(`Requested route ${ctx.req.original.method} ${ctx.req.original.url} not found!`)
+        .setBody(
+          `Requested route ${ctx.req.original.method} ${ctx.req.original.url} not found!`,
+        )
         .setStatus(404);
     } else if (result !== true && result !== undefined) {
       ctx.res.setBody(result);

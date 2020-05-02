@@ -4,17 +4,7 @@ import { Obj } from "./utils/object.ts";
 import { Application } from "./Application.ts";
 
 export class Router<S extends object = Obj, R extends object = Obj> {
-  /*
-export type LifecycleHook =
-  | "onRequest"
-  | "preParsing"
-  | "preHandling"
-  | "onHandle"
-  | "postHandling"
-  | "preSending"
-  | "postSending"
-  | null;
-  */
+  protected app?: Application<S, R>;
 
   private handlers: HandlerObject<S, R> = {
     onRequest: [],
@@ -24,7 +14,7 @@ export type LifecycleHook =
     postHandling: [],
     preSending: [],
     postSending: [],
-  }
+  };
 
   public add(
     obj: RequestOptions | Path | RequestHandler<S, R>,
@@ -51,6 +41,8 @@ export type LifecycleHook =
         cycle = nLifecicle;
       } else if (handler instanceof Router) {
         cycle = undefined;
+        handler.app = this.app;
+        handler.onInit();
       } else {
         cycle = "onHandle";
       }
@@ -192,6 +184,8 @@ export type LifecycleHook =
     return undefined;
   }
 
+  protected onInit(): void {}
+
   private generateHandlerEntry(
     path: Path,
     method: RequestMethod | null,
@@ -267,8 +261,7 @@ export type RequestMethod =
   | "TRACE"
   | "PATCH";
 
-interface HandlerObject<S extends object = Obj,
-R extends object = Obj> {
+interface HandlerObject<S extends object = Obj, R extends object = Obj> {
   onRequest: HandlerEntry<S, R>[];
   preParsing: HandlerEntry<S, R>[];
   preHandling: HandlerEntry<S, R>[];
@@ -276,7 +269,7 @@ R extends object = Obj> {
   postHandling: HandlerEntry<S, R>[];
   preSending: HandlerEntry<S, R>[];
   postSending: HandlerEntry<S, R>[];
-};
+}
 
 export type LifecycleHook = keyof HandlerObject<any, any>;
 
