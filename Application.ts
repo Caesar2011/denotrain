@@ -28,10 +28,10 @@ export class Application<
   private async runHook(ctx: Context<S, R>, lifecycle: LifecycleHook) {
     const result = await this.handle(ctx, lifecycle);
     if (
-      result === undefined && lifecycle == "onHandle" && ctx.res.body !== null
+      result === undefined && lifecycle == "onHandle" && ctx.res.body === null
     ) {
       ctx.res
-        .setBody(`Requested route ${ctx.req.original.url} not found!`)
+        .setBody(`Requested route ${ctx.req.original.method} ${ctx.req.original.url} not found!`)
         .setStatus(404);
     } else if (result !== true && result !== undefined) {
       ctx.res.setBody(result);
