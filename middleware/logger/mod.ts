@@ -6,19 +6,17 @@ export class TrainLogger extends Router {
     super();
     this.use({ lifecycle: "postSending" }, (ctx) => {
       const status = ctx.res.status;
+      const statusStr = status + "";
+      const coloredStatus: string =
+        (status < 200) ? statusStr :
+        (status < 300) ? green(statusStr) :
+        (status < 400) ? cyan(statusStr) :
+        (status < 500) ? yellow(statusStr) :
+        red(statusStr)
       const method = ctx.req.original.method;
       const url = ctx.req.original.url;
-      if (status >= 200) {
-        console.log(green(status + ""), method, url);
-      } else if (status >= 300) {
-        console.log(cyan(status + ""), method, url);
-      } else if (status >= 400) {
-        console.log(yellow(status + ""), method, url);
-      } else if (status >= 500) {
-        console.log(red(status + ""), method, url);
-      } else {
-        console.log("   ", method, url);
-      }
+      
+      console.log(coloredStatus, method, url);
     });
   }
 }
