@@ -4,7 +4,27 @@ import { Obj } from "./utils/object.ts";
 import { Application } from "./Application.ts";
 
 export class Router<S extends object = Obj, R extends object = Obj> {
-  private handlers: HandlerEntry<S, R>[] = [];
+  /*
+export type LifecycleHook =
+  | "onRequest"
+  | "preParsing"
+  | "preHandling"
+  | "onHandle"
+  | "postHandling"
+  | "preSending"
+  | "postSending"
+  | null;
+  */
+
+  private handlers: HandlerObject<S, R> = {
+    onRequest: [],
+    preParsing: [],
+    preHandling: [],
+    onHandle: [],
+    postHandling: [],
+    preSending: [],
+    postSending: [],
+  }
 
   public add(
     obj: RequestOptions | Path | RequestHandler<S, R>,
@@ -25,18 +45,28 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     } else {
       nPath = obj;
     }
-    let cycle: LifecycleHook;
+    let cycle: LifecycleHook | undefined;
     for (const handler of handlers) {
       if (nLifecicle !== undefined) {
         cycle = nLifecicle;
       } else if (handler instanceof Router) {
-        cycle = null;
+        cycle = undefined;
       } else {
         cycle = "onHandle";
       }
-      this.handlers.push(
-        this.generateHandlerEntry(nPath, cycle, method, handler),
-      );
+      if (cycle !== undefined) {
+        this.handlers[cycle].push(
+          this.generateHandlerEntry(nPath, method, handler),
+        );
+      } else {
+        for (const key in this.handlers) {
+          if (this.handlers.hasOwnProperty(key)) {
+            this.handlers[key as LifecycleHook].push(
+              this.generateHandlerEntry(nPath, method, handler),
+            );
+          }
+        }
+      }
     }
     return this;
   }
@@ -164,11 +194,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
 
   private generateHandlerEntry(
     path: Path,
-    lifecycle: LifecycleHook | null,
     method: RequestMethod | null,
     handler: RequestHandler<S, R>,
   ): HandlerEntry<S, R> {
-    lifecycle = lifecycle;
     if (typeof path == "string") {
       const paramMatches = path.matchAll(/\/:([a-z]+)/g);
       const params: string[] = [];
@@ -181,9 +209,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);
-      return { regex, lifecycle, params, method, handler };
+      return { regex, params, method, handler };
     } else {
-      return { regex: path, lifecycle, params: [], method, handler };
+      return { regex: path, params: [], method, handler };
     }
   }
 
@@ -215,16 +243,14 @@ export class Router<S extends object = Obj, R extends object = Obj> {
   }
 
   private *handlerIterator(ctx: Context<S, R>, lifecycle: LifecycleHook) {
-    for (const handler of this.handlers) {
-      if (handler.lifecycle === null || handler.lifecycle === lifecycle) {
-        const matchedPath = this.matchPath(ctx, handler);
-        if (matchedPath) {
-          yield {
-            newSubPath: matchedPath.newSubPath,
-            addParams: matchedPath.addParams,
-            handler: handler.handler,
-          };
-        }
+    for (const handler of this.handlers[lifecycle]) {
+      const matchedPath = this.matchPath(ctx, handler);
+      if (matchedPath) {
+        yield {
+          newSubPath: matchedPath.newSubPath,
+          addParams: matchedPath.addParams,
+          handler: handler.handler,
+        };
       }
     }
   }
@@ -241,15 +267,18 @@ export type RequestMethod =
   | "TRACE"
   | "PATCH";
 
-export type LifecycleHook =
-  | "onRequest"
-  | "preParsing"
-  | "preHandling"
-  | "onHandle"
-  | "postHandling"
-  | "preSending"
-  | "postSending"
-  | null;
+interface HandlerObject<S extends object = Obj,
+R extends object = Obj> {
+  onRequest: HandlerEntry<S, R>[];
+  preParsing: HandlerEntry<S, R>[];
+  preHandling: HandlerEntry<S, R>[];
+  onHandle: HandlerEntry<S, R>[];
+  postHandling: HandlerEntry<S, R>[];
+  preSending: HandlerEntry<S, R>[];
+  postSending: HandlerEntry<S, R>[];
+};
+
+export type LifecycleHook = keyof HandlerObject<any, any>;
 
 export type Body = Uint8Array | Deno.Reader | string | JSONSuccess;
 
@@ -281,7 +310,6 @@ type JSONSuccess = { [_: string]: any };
 
 interface HandlerEntry<S extends object = Obj, R extends object = Obj> {
   regex: RegExp | null;
-  lifecycle: LifecycleHook;
   params: string[];
   method: RequestMethod | null;
   handler: RequestHandler<S, R>;
