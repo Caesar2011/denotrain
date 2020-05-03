@@ -1,1 +1,1 @@
-export type Obj = { [_: string]: any };
+export type Obj = any;

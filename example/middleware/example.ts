@@ -1,13 +1,14 @@
 import { Application, Router } from "../../mod.ts";
 import { TrainStatic } from "../../middleware/static/mod.ts";
-import { TrainLogger } from "../../middleware/logger/mod.ts";
+import { TrainLogger, LoggerContext } from "../../middleware/logger/mod.ts";
 
-const app = new Application({ port: 3001 });
+const app = new Application<LoggerContext>({ port: 3001 });
 
 app.use(new TrainLogger());
 app.use("/static", new TrainStatic("./public"));
 
 app.get("/", (ctx) => {
+  ctx.app.data.log("Create a log message by yourself!");
   ctx.res
     .setMimeType("text/html");
   return `
