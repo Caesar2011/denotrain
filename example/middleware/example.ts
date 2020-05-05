@@ -22,4 +22,4 @@ app.get("/", (ctx) => {
   `;
 });
 
-app.run();
+await app.run();

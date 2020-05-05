@@ -32,4 +32,4 @@ app.get("/:id", (ctx) => {
   return "Hello World with ID: " + ctx.req.param.id;
 });
 
-app.run();
+await app.run();

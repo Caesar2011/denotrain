@@ -13,4 +13,4 @@ app.get("/home", async (ctx) => {
   return true;
 });
 
-app.run();
+await app.run();
