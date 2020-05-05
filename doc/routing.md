@@ -1,28 +1,6 @@
-# denotrain
+# Getting Started
 
-![Deno Train Logo](./doc/denotrain.png)
-
-This is a web server library inspired by [expressJS](https://expressjs.com) written for node. It supports routers, query parameters and url parameters. The library is desired to use with deno.
-
-## Features
-
- - [Getting Started](./doc/getting_started.md)
- - Responses
- - Routing
- - Body, query and parameters
- - Custom Middleware
-   - Static
-   - Logging
-   - User Management
-   - Entity Validation (TODO)
-   - Database Connector (TODO)
-   - Permission System (TODO)
- - Extend application and requests
- - View Engines / Templates
-
-## Example
-
-Run this example with `deno run --allow-net=127.0.0.1 https://deno.land/x/denotrain@v0.2.0/example/routers/example.ts`.
+This script is the base 
 
 ```ts
 import { Application, Router } from "https://deno.land/x/denotrain@v0.2.0/mod.ts";
@@ -72,6 +50,3 @@ app.get("/:id", (ctx) => {
 await app.run();
 ```
 
-## Documentation
-
-View documentation on the [official documentation website](https://doc.deno.land/https/raw.githubusercontent.com/Caesar2011/denotrain/master/mod.ts).
