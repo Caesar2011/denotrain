@@ -1,6 +1,6 @@
 # denotrain
 
-![Deno Train Logo](./doc/denotrain.png)
+![Deno Train Logo](./doc/denotrain-scaled.png)
 
 This is a web server library inspired by [expressJS](https://expressjs.com) written for node. It supports routers, query parameters and url parameters. The library is desired to use with deno.
 
