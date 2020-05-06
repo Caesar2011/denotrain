@@ -13,7 +13,7 @@ export class Application<
 
   constructor(options: AppOptions) {
     super();
-    this.app = this;
+    this.onInit(this);
     const defs = { port: 3000 };
     this.options = { ...defs, ...options };
   }

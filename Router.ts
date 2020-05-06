@@ -5,6 +5,7 @@ import { Application } from "./Application.ts";
 
 export class Router<S extends object = Obj, R extends object = Obj> {
   protected app?: Application<S, R>;
+  private updateRouterHandler: Router[] = [];
 
   private handlers: HandlerObject<S, R> = {
     onRequest: [],
@@ -41,8 +42,10 @@ export class Router<S extends object = Obj, R extends object = Obj> {
         cycle = nLifecicle;
       } else if (handler instanceof Router) {
         cycle = undefined;
-        handler.app = this.app;
-        handler.onInit();
+        if (this.app)
+          handler.onInit(this.app);
+        else
+          this.updateRouterHandler.push(handler);
       } else {
         cycle = "onHandle";
       }
@@ -184,7 +187,10 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     return undefined;
   }
 
-  protected onInit(): void {}
+  protected onInit(app: Application<S, R>): void {
+    this.app = app;
+    this.updateRouterHandler.forEach(router => router.onInit(app));
+  }
 
   private generateHandlerEntry(
     path: Path,

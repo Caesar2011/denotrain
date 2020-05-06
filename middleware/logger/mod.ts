@@ -1,5 +1,6 @@
 import { Router } from "../../mod.ts";
 import { red, yellow, cyan, green } from "./deps.ts";
+import { Application } from "../../Application.ts";
 
 export interface LoggerContext {
   log(...msg: any[]): void;
@@ -30,14 +31,14 @@ export class TrainLogger extends Router<LoggerContext, any> {
     });
   }
 
-  onInit() {
+  onInit(app: Application<LoggerContext, any>) {
+    super.onInit(app);
     const loggerCtx = {
       log: (...msg: any[]) => console.log("[L]", ...msg),
       warn: (...msg: any[]) => console.warn("[W]", ...msg),
       debug: (...msg: any[]) => console.debug("[D]", ...msg),
       error: (...msg: any[]) => console.error("[E]", ...msg),
     };
-    this.app?.data;
     Object.assign(this.app?.data, loggerCtx);
   }
 }
