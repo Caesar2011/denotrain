@@ -1,6 +1,9 @@
-import { Application, Router } from "../../mod.ts";
-import { TrainStatic } from "../../middleware/static/mod.ts";
-import { TrainLogger, LoggerContext } from "../../middleware/logger/mod.ts";
+import {
+  join,
+  Application,
+  TrainStatic,
+  TrainLogger, LoggerContext
+} from "./deps.ts";
 
 const app = new Application<LoggerContext>({ port: 3001 });
 

@@ -1,4 +1,4 @@
-import { readFileStr } from "./deps.ts";
+import { readFileStr, join } from "./deps.ts";
 import { Context } from "./Context.ts";
 
 export abstract class ViewEngine {
@@ -9,9 +9,9 @@ export abstract class ViewEngine {
     data: { [_: string]: any },
     ctx: Context<any, any>,
   ): Promise<void> {
-    let joinPath =
-      new URL(this.path + "/" + file, window.location.href).pathname;
-    joinPath = Deno?.build.os == "windows" ? joinPath.substring(1) : joinPath;
+    const joinPath = ctx.app.options.appRoot
+      ? join(ctx.app.options.appRoot, this.path, file)
+      : join(this.path, file);
     const f = await readFileStr(joinPath);
     return this._render(f, data, ctx);
   }

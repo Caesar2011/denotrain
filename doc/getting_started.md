@@ -40,9 +40,13 @@ app.get("/", (ctx) => {
   // Returning a json
   return {"hello": "world"};
 });
+
+// Hook up the router on "/admin". The routes are now
+// available on "/admin" and "/admin/edit"
 app.use("/admin", router);
+
 app.get("/:id", (ctx) => {
-  // Use url parameters
+  // Use url parameters and return a string
   return "Hello World with ID: " + ctx.req.param.id
 });
 

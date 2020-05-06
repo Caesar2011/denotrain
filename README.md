@@ -1,8 +1,8 @@
 # denotrain
 
-![Deno Train Logo](./doc/denotrain-scaled.png)
-
 This is a web server library inspired by [expressJS](https://expressjs.com) written for node. It supports routers, query parameters and url parameters. The library is desired to use with deno.
+
+![Deno Train Logo](./doc/denotrain-scaled.png)
 
 ## Features
 
@@ -62,7 +62,11 @@ app.get("/", (ctx) => {
   // Returning a json
   return {"hello": "world"};
 });
+
+// Hook up the router on "/admin". The routes are now
+// available on "/admin" and "/admin/edit"
 app.use("/admin", router);
+
 app.get("/:id", (ctx) => {
   // Use url parameters
   return "Hello World with ID: " + ctx.req.param.id

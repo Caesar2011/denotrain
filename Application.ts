@@ -74,6 +74,7 @@ interface AppParameters extends AppOptions {
 }
 
 export interface AppOptions {
+  appRoot?: string;
   port?: number;
   viewEngine?: ViewEngine;
 }

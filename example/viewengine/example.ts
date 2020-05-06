@@ -1,5 +1,4 @@
-import { Application, Router } from "../../mod.ts";
-import { DejsEngine } from "../../middleware/view-engine-dejs/mod.ts";
+import { Application, Router, DejsEngine } from "./deps.ts";
 
 const app = new Application({
   port: 3001,
