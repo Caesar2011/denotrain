@@ -198,14 +198,14 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     handler: RequestHandler<S, R>,
   ): HandlerEntry<S, R> {
     if (typeof path == "string") {
-      const paramMatches = path.matchAll(/\/:([a-z]+)/g);
+      const paramMatches = path.matchAll(/\/:([a-z]+)/gi);
       const params: string[] = [];
       for (const match of paramMatches) {
         params.push(match[1]);
       }
       path = path
         .replace(/(.)\/$/, "$1")
-        .replace(/\/:([a-z]+)/g, "/([0-9a-zA-Z]+)");
+        .replace(/\/:([a-z]+)/gi, "/([0-9a-zA-Z]+)");
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);
