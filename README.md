@@ -69,7 +69,7 @@ app.use("/admin", router);
 
 app.get("/:id", (ctx) => {
   // Use url parameters
-  return "Hello World with ID: " + ctx.req.param.id
+  return "Hello World with ID: " + ctx.req.params.id
 });
 
 // Run the application on the specified port

@@ -168,9 +168,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     for (const iter of this.handlerIterator(ctx, lifecycle)) {
       // Update parameters
       const oldRelPath: string = req.relPath;
-      const oldParams = req.param;
+      const oldParams = req.params;
       req.relPath = iter.newSubPath;
-      req.param = { ...req.param, ...iter.addParams };
+      req.params = { ...req.params, ...iter.addParams };
       // Handle
       if (iter.handler instanceof Router) {
         result = await iter.handler.handle(ctx, lifecycle);
@@ -179,7 +179,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       }
       // Restore
       req.relPath = oldRelPath;
-      req.param = oldParams;
+      req.params = oldParams;
       if (result !== undefined) {
         return result;
       }
@@ -198,14 +198,14 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     handler: RequestHandler<S, R>,
   ): HandlerEntry<S, R> {
     if (typeof path == "string") {
-      const paramMatches = path.matchAll(/\/:([a-z]+)/g);
+      const paramMatches = path.matchAll(/\/:([a-z]+)/gi);
       const params: string[] = [];
       for (const match of paramMatches) {
         params.push(match[1]);
       }
       path = path
         .replace(/(.)\/$/, "$1")
-        .replace(/\/:([a-z]+)/g, "/([0-9a-zA-Z]+)");
+        .replace(/\/:([a-z]+)/gi, "/([0-9a-zA-Z]+)");
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);

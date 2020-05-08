@@ -29,7 +29,7 @@ app.post("/", async (ctx) => {
 
 app.use("/admin", router);
 app.get("/:id", (ctx) => {
-  return "Hello World with ID: " + ctx.req.param.id;
+  return "Hello World with ID: " + ctx.req.params.id;
 });
 
 await app.run();
