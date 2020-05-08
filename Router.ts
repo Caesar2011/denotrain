@@ -168,9 +168,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     for (const iter of this.handlerIterator(ctx, lifecycle)) {
       // Update parameters
       const oldRelPath: string = req.relPath;
-      const oldParams = req.param;
+      const oldParams = req.params;
       req.relPath = iter.newSubPath;
-      req.param = { ...req.param, ...iter.addParams };
+      req.params = { ...req.params, ...iter.addParams };
       // Handle
       if (iter.handler instanceof Router) {
         result = await iter.handler.handle(ctx, lifecycle);
@@ -179,7 +179,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       }
       // Restore
       req.relPath = oldRelPath;
-      req.param = oldParams;
+      req.params = oldParams;
       if (result !== undefined) {
         return result;
       }
