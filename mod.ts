@@ -5,3 +5,4 @@ export { ViewEngine } from "./ViewEngine.ts";
 export { ClientError } from "./ClientError.ts";
 export { Response } from "./Response.ts";
 export { Request } from "./Request.ts";
+export { Obj } from "./utils/object.ts";

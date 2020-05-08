@@ -1,24 +1,6 @@
 import { RequestHandler, ClientError, Context } from "../../mod.ts";
 import { v4 } from "./deps.ts";
 
-export interface TicketContext {
-  login(
-    username: string,
-    password: string,
-    auths?: string | string[] | null,
-  ): Promise<boolean>;
-  register(
-    username: string,
-    password: string,
-    auth: string,
-    data?: UserRegister,
-  ): Promise<boolean>;
-  logout(): Promise<void>;
-  isLoggedIn(): boolean;
-  user: User | null;
-  ticket: string | null;
-}
-
 export class TrainTicket {
   private readonly options: TicketParameters;
   private readonly authenticators: { [_: string]: TicketAuthenticator } = {};
@@ -35,11 +17,9 @@ export class TrainTicket {
     this.authenticators[key] = auth;
   }
 
-  readonly sessionMiddleware: RequestHandler<any, TicketContext> = async (
-    ctx,
-  ) => {
+  readonly sessionMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
     const ticketContext: TicketContext = {
-      isLoggedIn: () => {
+      isLoggedIn: (): boolean => {
         return ctx.data.user !== null;
       },
 
@@ -47,7 +27,7 @@ export class TrainTicket {
         username: string,
         password: string,
         auths: string | string[] | null = null,
-      ) => {
+      ): Promise<boolean> => {
         if (auths === null) {
           auths = Object.keys(this.authenticators);
         }
@@ -63,6 +43,9 @@ export class TrainTicket {
             ctx.data.ticket = ctx.data.ticket || v4.generate();
             ctx.data.user = { provider: auth, ...user };
             this.storage.upsertTicket(ctx.data.ticket, ctx.data.user);
+            ctx.res
+              .setCookie(this.options.sessionKey, ctx.data.ticket);
+              console.log("set cookie");
             return true;
           }
         }
@@ -74,7 +57,7 @@ export class TrainTicket {
         password: string,
         auth: string,
         data?: UserRegister,
-      ) => {
+      ): Promise<boolean> => {
         const user = await this.authenticators[auth].register(
           username,
           password,
@@ -86,7 +69,7 @@ export class TrainTicket {
         return false;
       },
 
-      logout: async () => {
+      logout: async (): Promise<void> => {
         ctx.data.user = null;
         if (ctx.data.ticket) {
           this.storage.invalidateTicket(ctx.data.ticket);
@@ -114,15 +97,33 @@ export class TrainTicket {
 
   readonly doLoginMiddleware: RequestHandler<any, TicketContext> = (ctx) => {
     if (ctx.req.body.username && ctx.req.body.password) {
-      return ctx.data.login(ctx.req.body.username, ctx.req.body.password);
+      ctx.data.login(ctx.req.body.username, ctx.req.body.password);
     } else {
       throw new TicketError(422, "Username or password not provided!");
     }
   };
 
   readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = (ctx) => {
-    return ctx.data.logout();
+    ctx.data.logout();
   };
+}
+
+export interface TicketContext {
+  login(
+    username: string,
+    password: string,
+    auths?: string | string[] | null,
+  ): Promise<boolean>;
+  register(
+    username: string,
+    password: string,
+    auth: string,
+    data?: UserRegister,
+  ): Promise<boolean>;
+  logout(): Promise<void>;
+  isLoggedIn(): boolean;
+  user: User | null;
+  ticket: string | null;
 }
 
 export class TicketError extends ClientError {}

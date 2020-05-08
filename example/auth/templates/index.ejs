@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Denotrain Demo</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='stylesheet' type='text/css' media='screen' href='static/main.css'>
+</head>
+<body>
+  <% if (name) { %>
+    <h1>Welcome, <%= name %>!</h1>
+  <% } else { %>
+    <h1>Welcome!</h1>
+    <p>You are currently not logged in! <a href="/register">Create an account</a> or <a href="/login">login</a>.</p>
+  <% } %>
+</body>
+</html>

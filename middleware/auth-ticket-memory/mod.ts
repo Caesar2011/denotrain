@@ -5,7 +5,7 @@ import {
 } from "../auth/mod.ts";
 import { SHA256 } from "./deps.ts";
 
-export class LocalAuthenticator implements TicketAuthenticator {
+export class MemoryAuthenticator implements TicketAuthenticator {
   private users: { [hash: string]: UserProvided } = {};
   private nextId = 1;
 

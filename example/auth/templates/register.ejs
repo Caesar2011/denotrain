@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Denotrain Demo - Register</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='stylesheet' type='text/css' media='screen' href='static/main.css'>
+</head>
+<body>
+  <h1>Register</h1>
+  <p>You already have an account? <a href="/login">Login here!</a></p>
+  <form method="POST" action="/register">
+    <label>
+      Username:<br>
+      <input name="username" type="text">
+    </label>
+    <label>
+      Password:<br>
+      <input name="password" type="password">
+    </label>
+    <label>
+      E-Mail:<br>
+      <input name="mail" type="text">
+    </label>
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </form>
+</body>
+</html>

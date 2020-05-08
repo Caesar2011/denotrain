@@ -1,6 +1,6 @@
 import { TicketStorage, User } from "../auth/mod.ts";
 
-export class LocalStorage implements TicketStorage {
+export class MemoryStorage implements TicketStorage {
   private users: { [ticket: string]: { updated: number; user: User } } = {};
   private lifespan = 24 * 60 * 60 * 1000;
 
