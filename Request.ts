@@ -15,7 +15,7 @@ export class Request {
     this.original = request;
   }
 
-  public async init() {
+  public async _init() {
     return this.parseInit();
   }
 

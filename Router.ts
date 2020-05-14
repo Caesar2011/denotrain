@@ -42,10 +42,11 @@ export class Router<S extends object = Obj, R extends object = Obj> {
         cycle = nLifecicle;
       } else if (handler instanceof Router) {
         cycle = undefined;
-        if (this.app)
+        if (this.app) {
           handler.onInit(this.app);
-        else
+        } else {
           this.updateRouterHandler.push(handler);
+        }
       } else {
         cycle = "onHandle";
       }
@@ -189,7 +190,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
 
   protected onInit(app: Application<S, R>): void {
     this.app = app;
-    this.updateRouterHandler.forEach(router => router.onInit(app));
+    this.updateRouterHandler.forEach((router) => router.onInit(app));
   }
 
   private generateHandlerEntry(

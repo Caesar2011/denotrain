@@ -4,6 +4,12 @@ const app = new Application({ port: 3001 });
 const router = new Router();
 
 app.use((ctx) => {
+  // just manipulate the cookie object
+  // data is stored in the CookieStorage (see cookie example)
+  ctx.cookies["build"] = "in";
+  delete ctx.cookies["removeit"];
+
+  // or you can add cookies as sperate cookies (not recommended)
   ctx.res
     .setCookie("user.session", "qwertz", { maxAge: 60 * 60 * 24 })
     .setCookie("a", "123", { maxAge: 60 * 60 * 24 })

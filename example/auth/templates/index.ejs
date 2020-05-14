@@ -10,9 +10,27 @@
 <body>
   <% if (name) { %>
     <h1>Welcome, <%= name %>!</h1>
+    <% if (msg === 'login') { %>
+      <div class="msg">Successfully logged in!</div>
+    <% } else if (msg === 'logout') { %>
+      <div class="msg">Successfully logged out!</div>
+    <% } else if (msg === 'registered') { %>
+      <div class="msg">Successfully registered!</div>
+    <% } %>
+    <p>Now you can view the <a href="/restricted">page with restricted view permissions</a>!</p>
+    <form method="post" action="/logout"><button type="submit">Logout</button></form>
+    <span class="raw"><%= userObj %></span>
   <% } else { %>
     <h1>Welcome!</h1>
+    <% if (msg === 'login') { %>
+      <div class="msg">Successfully logged in!</div>
+    <% } else if (msg === 'logout') { %>
+      <div class="msg">Successfully logged out!</div>
+    <% } else if (msg === 'registered') { %>
+      <div class="msg">Successfully registered!</div>
+    <% } %>
     <p>You are currently not logged in! <a href="/register">Create an account</a> or <a href="/login">login</a>.</p>
+    <p>Therefore you are not allowed to view the <a href="/restricted">page with restricted view permissions</a>.</p>
   <% } %>
 </body>
 </html>

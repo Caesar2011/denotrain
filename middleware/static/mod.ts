@@ -4,7 +4,6 @@ export class TrainStatic extends Router {
   constructor(private root: string) {
     super();
     this.get(async (ctx: Context) => {
-      
       let relPath: string = ctx.req.relPath;
       if (relPath.endsWith("/")) {
         relPath = relPath + "index.html";

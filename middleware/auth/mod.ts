@@ -7,7 +7,7 @@ export class TrainTicket {
 
   constructor(private storage: TicketStorage, options?: TicketOptions) {
     this.options = {
-      ...{ sessionKey: "train.session.id", ticketLifespan: 60 * 60 * 24 },
+      ...{ sessionKey: "user.ticket", ticketLifespan: 60 * 60 * 24 },
       ...options,
     };
     this.storage.setTicketLifespan(this.options.ticketLifespan);
@@ -17,7 +17,9 @@ export class TrainTicket {
     this.authenticators[key] = auth;
   }
 
-  readonly sessionMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
+  readonly sessionMiddleware: RequestHandler<any, TicketContext> = async (
+    ctx,
+  ) => {
     const ticketContext: TicketContext = {
       isLoggedIn: (): boolean => {
         return ctx.data.user !== null;
@@ -43,9 +45,7 @@ export class TrainTicket {
             ctx.data.ticket = ctx.data.ticket || v4.generate();
             ctx.data.user = { provider: auth, ...user };
             this.storage.upsertTicket(ctx.data.ticket, ctx.data.user);
-            ctx.res
-              .setCookie(this.options.sessionKey, ctx.data.ticket);
-              console.log("set cookie");
+            ctx.cookies[this.options.sessionKey] = ctx.data.ticket;
             return true;
           }
         }
@@ -80,7 +80,7 @@ export class TrainTicket {
       ticket: null,
     };
 
-    const cookieTicket = ctx.req.cookies[this.options.sessionKey];
+    const cookieTicket = ctx.cookies[this.options.sessionKey] as string;
     if (cookieTicket) {
       ticketContext.user = await this.storage.loadTicket(cookieTicket);
       ticketContext.ticket = cookieTicket;
@@ -95,7 +95,7 @@ export class TrainTicket {
     }
   };
 
-  readonly doLoginMiddleware: RequestHandler<any, TicketContext> = (ctx) => {
+  readonly doLoginMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
     if (ctx.req.body.username && ctx.req.body.password) {
       ctx.data.login(ctx.req.body.username, ctx.req.body.password);
     } else {
@@ -103,8 +103,8 @@ export class TrainTicket {
     }
   };
 
-  readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = (ctx) => {
-    ctx.data.logout();
+  readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
+    await ctx.data.logout();
   };
 }
 

@@ -2,7 +2,9 @@ import { serve, ServerRequest } from "./deps.ts";
 import { Router, LifecycleHook } from "./Router.ts";
 import { Context } from "./Context.ts";
 import { ViewEngine } from "./ViewEngine.ts";
+import { CookieStorage, MemoryCookieStorage } from "./CookieStorage.ts";
 import { ClientError } from "./ClientError.ts";
+import { CookieOptions } from "./utils/cookies.ts";
 
 export class Application<
   S extends object = { [key: string]: any },
@@ -14,7 +16,12 @@ export class Application<
   constructor(options: AppOptions) {
     super();
     this.onInit(this);
-    const defs = { port: 3000 };
+    const defs = {
+      port: 3000,
+      cookieKey: "train.ticket",
+      cookieStorage: new MemoryCookieStorage(),
+      cookieOptions: { maxAge: 60 * 60 * 24 },
+    };
     this.options = { ...defs, ...options };
   }
 
@@ -45,7 +52,7 @@ export class Application<
     const ctx = new Context<S, R>(request, this);
     await this.runHook(ctx, "onRequest");
     await this.runHook(ctx, "preParsing");
-    await ctx.req.init();
+    await ctx._init();
     await this.runHook(ctx, "preHandling");
     try {
       await this.runHook(ctx, "onHandle");
@@ -64,17 +71,23 @@ export class Application<
     await this.runHook(ctx, "postHandling");
     await ctx.res._prepareResponse();
     await this.runHook(ctx, "preSending");
-    await ctx.res._respond();
+    await ctx._respond();
     await this.runHook(ctx, "postSending");
   }
 }
 
 interface AppParameters extends AppOptions {
   port: number;
+  cookieStorage: CookieStorage;
+  cookieKey: string;
+  cookieOptions: CookieOptions;
 }
 
 export interface AppOptions {
   appRoot?: string;
   port?: number;
   viewEngine?: ViewEngine;
+  cookieStorage?: CookieStorage;
+  cookieKey?: string;
+  cookieOptions?: CookieOptions;
 }

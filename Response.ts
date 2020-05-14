@@ -13,7 +13,7 @@ export class Response {
   public mimeType: string = "";
   public status: number = 200;
   public headers: [string, string][] = [];
-  public setCookies: {
+  public cookies: {
     [_: string]: { value: string; options: CookieOptions } | null;
   } = {};
   public response: DenoResponse | undefined;
@@ -74,7 +74,7 @@ export class Response {
   }
 
   public deleteCookie(key: string): Response {
-    this.setCookies[key] = null;
+    this.cookies[key] = null;
     return this;
   }
 
@@ -83,16 +83,16 @@ export class Response {
     value: string,
     options: CookieOptions = {},
   ): Response {
-    this.setCookies[key] = { value, options };
+    this.cookies[key] = { value, options };
     return this;
   }
 
   /** @internal */
   public async _prepareResponse(): Promise<void> {
     const cookieHeaders: [string, string][] = [];
-    for (const key in this.setCookies) {
-      if (this.setCookies.hasOwnProperty(key)) {
-        let val = this.setCookies[key] ||
+    for (const key in this.cookies) {
+      if (this.cookies.hasOwnProperty(key)) {
+        let val = this.cookies[key] ||
           { value: "", options: { expires: 1000 } };
         cookieHeaders.push(generateCookieHeader(key, val.value, val.options));
       }

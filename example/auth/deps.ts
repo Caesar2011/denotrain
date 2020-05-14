@@ -1,4 +1,4 @@
-export { Application, Router, Obj,  } from "../../mod.ts";
+export { Application, Router, Obj } from "../../mod.ts";
 export { DejsEngine } from "../../middleware/view-engine-dejs/mod.ts";
 export { TicketContext, TrainTicket } from "../../middleware/auth/mod.ts";
 export { MemoryStorage } from "../../middleware/auth-storage-memory/mod.ts";

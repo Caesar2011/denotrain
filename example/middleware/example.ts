@@ -1,7 +1,8 @@
 import {
   Application,
   TrainStatic,
-  TrainLogger, LoggerContext
+  TrainLogger,
+  LoggerContext,
 } from "./deps.ts";
 
 const app = new Application<LoggerContext>({ port: 3001 });
