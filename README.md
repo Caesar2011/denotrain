@@ -6,10 +6,14 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
 
 ## Features
 
- - [Getting Started](./doc/getting_started.md)
- - Responses
+ - [Getting Started!](./doc/getting_started.md)
+ - [Request handlers & lifecycle](./doc/handlers.md)
+ - [Responses](./doc/responses.md)
  - Routing
  - Body, query and parameters
+ - Cookies
+ - View Engines / Templates
+ - Extend application and requests
  - Custom Middleware
    - Static
    - Logging
@@ -17,8 +21,6 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
    - Entity Validation (TODO)
    - Database Connector (TODO)
    - Permission System (TODO)
- - Extend application and requests
- - View Engines / Templates
 
 ## Example
 
@@ -34,17 +36,14 @@ const router = new Router();
 
 // Middleware 
 app.use((ctx) => {
-  // Multiple cookie opterations are currently not supported
-  // by deno itself, this will change in the future
-  // https://github.com/denoland/deno/pull/4840
-
   // Add data to the response object and return undefined
   // -> Still passed to other handlers
-  ctx.res
-    .setCookie("user.session", "qwertz", {maxAge: 60 * 60 * 24})
-    .setCookie("a", "123", {maxAge: 60 * 60 * 24})
-    .setCookie("b", "456", {maxAge: 60 * 60 * 24})
-    .deleteCookie("user.session");
+
+  // Add cookies to the deno train cookie handler
+  ctx.cookies["user.session"] = "qwertz";
+  ctx.cookies["a"] = "123";
+  ctx.cookies["b"] = "456";
+  delete ctx.cookies["user.session"];
   return;
 });
 

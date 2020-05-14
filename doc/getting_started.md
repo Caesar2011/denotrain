@@ -1,6 +1,12 @@
 # Getting Started
 
-This script is the base 
+This script explains the basic possibilities of denotrain. All imports intended for the public are in the file `/mod.ts`. Additional official middleware can be found in `/middleware/<name>/mod.ts`.
+
+First an application is created. Specifying a port is optional (3000 by default). In addition, further app-wide parameters can be specified, such as a render engine for HTML templates or a cookie store. An app root is optional and can be used for various middleware as a root directory for relative paths. 
+
+Under `Application`, so-called `RequestHandler` can be mounted.This can either be an (async) function or a `Router`. From the class `Router` should be inherited for own middleware.
+
+## Basic features at a glance
 
 ```ts
 import { Application, Router } from "https://deno.land/x/denotrain@v0.4.0/mod.ts";
@@ -12,17 +18,14 @@ const router = new Router();
 
 // Middleware 
 app.use((ctx) => {
-  // Multiple cookie opterations are currently not supported
-  // by deno itself, this will change in the future
-  // https://github.com/denoland/deno/pull/4840
-
   // Add data to the response object and return undefined
   // -> Still passed to other handlers
-  ctx.res
-    .setCookie("user.session", "qwertz", {maxAge: 60 * 60 * 24})
-    .setCookie("a", "123", {maxAge: 60 * 60 * 24})
-    .setCookie("b", "456", {maxAge: 60 * 60 * 24})
-    .deleteCookie("user.session");
+
+  // Add cookies to the deno train cookie handler
+  ctx.cookies["user.session"] = "qwertz";
+  ctx.cookies["a"] = "123";
+  ctx.cookies["b"] = "456";
+  delete ctx.cookies["user.session"];
   return;
 });
 
@@ -53,4 +56,3 @@ app.get("/:id", (ctx) => {
 // Run the application on the specified port
 await app.run();
 ```
-

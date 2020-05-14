@@ -266,7 +266,8 @@ export type RequestMethod =
   | "CONNECT"
   | "OPTIONS"
   | "TRACE"
-  | "PATCH";
+  | "PATCH"
+  | string;
 
 interface HandlerObject<S extends object = Obj, R extends object = Obj> {
   onRequest: HandlerEntry<S, R>[];
