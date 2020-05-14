@@ -22,10 +22,10 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
 
 ## Example
 
-Run this example with `deno run --allow-net=127.0.0.1 https://deno.land/x/denotrain@v0.2.0/example/routers/example.ts`.
+Run this example with `deno run --allow-net=127.0.0.1 https://deno.land/x/denotrain@v0.4.0/example/routers/example.ts`.
 
 ```ts
-import { Application, Router } from "https://deno.land/x/denotrain@v0.2.0/mod.ts";
+import { Application, Router } from "https://deno.land/x/denotrain@v0.4.0/mod.ts";
 
 // Create a new application and specify port
 const app = new Application({port: 3001});
