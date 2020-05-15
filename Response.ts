@@ -30,8 +30,12 @@ export class Response {
 
   async file(filePath: string): Promise<boolean> {
     const contType: any = contentType(extname(filePath));
-    const fileInfo = await Deno.stat(filePath);
-    if (!fileInfo.isFile) {
+    try {
+      const fileInfo = await Deno.stat(filePath);
+      if (!fileInfo.isFile) {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
     const file = await Deno.readFile(filePath);
