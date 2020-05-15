@@ -24,7 +24,7 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
 
 ## Example
 
-Run this example on port 3001 with `deno run --allow-net=0.0.0.0 https://deno.land/x/denotrain@v0.4.1/example/routers/example.ts`.
+Run this example on port 3001 with `deno run --allow-net=0.0.0.0 https://deno.land/x/denotrain@v0.4.2/example/routers/example.ts`.
 
 Try the following routes:
 
@@ -38,7 +38,7 @@ Try the following routes:
 More examples are in this repository under `/examples`.
 
 ```ts
-import { Application, Router } from "https://deno.land/x/denotrain@v0.4.1/mod.ts";
+import { Application, Router } from "https://deno.land/x/denotrain@v0.4.2/mod.ts";
 
 // Create a new application and specify port
 const app = new Application({port: 3001});

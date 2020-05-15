@@ -9,7 +9,7 @@ Under `Application`, so-called `RequestHandler` can be mounted.This can either b
 ## Basic features at a glance
 
 ```ts
-import { Application, Router } from "https://deno.land/x/denotrain@v0.4.1/mod.ts";
+import { Application, Router } from "https://deno.land/x/denotrain@v0.4.2/mod.ts";
 
 // Create a new application and specify port
 const app = new Application({port: 3001});
