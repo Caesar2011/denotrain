@@ -19,13 +19,29 @@ app.use(new TrainLogger());
 app.use("/static", new TrainStatic("./public"));
 
 const tickets = new TrainTicket(new MemoryStorage());
-tickets.addAuthenticator("mem-auth", new MemoryAuthenticator([{username: "abc", password: "def", data: {emails: [{value: "max@mustermann.de", type: "home"}]}}]));
+tickets.addAuthenticator(
+  "mem-auth",
+  new MemoryAuthenticator(
+    [{
+      username: "abc",
+      password: "def",
+      data: { emails: [{ value: "max@mustermann.de", type: "home" }] },
+    }],
+  ),
+);
 
 app.use(tickets.sessionMiddleware);
 
 app.get("/", async (ctx) => {
   await ctx.res
-    .render("index.ejs", { name: ctx.data.user?.displayName, userObj: JSON.stringify(ctx.data.user, null, 2), msg: ctx.req.query.msg });
+    .render(
+      "index.ejs",
+      {
+        name: ctx.data.user?.displayName,
+        userObj: JSON.stringify(ctx.data.user, null, 2),
+        msg: ctx.req.query.msg,
+      },
+    );
   // return true: handled, no "onHandle" lifecycle handler should pass
   return true;
 });
@@ -58,7 +74,12 @@ app.post("/register", async (ctx) => {
   const username = ctx.req.body.username;
   const password = ctx.req.body.password;
   const mail = ctx.req.body.mail;
-  await ctx.data.register(username, password, "mem-auth", { emails: [{value: mail, type: "home"}] });
+  await ctx.data.register(
+    username,
+    password,
+    "mem-auth",
+    { emails: [{ value: mail, type: "home" }] },
+  );
   ctx.res
     .setStatus(302)
     .addHeader("Location", "/?msg=registered");

@@ -137,7 +137,7 @@ export class Response {
       await this.ctx.req.original.respond(this.response);
       this._sent = true;
     } else {
-      await this.ctx.req.original.respond({status: 204});
+      await this.ctx.req.original.respond({ status: 204 });
     }
   }
 }

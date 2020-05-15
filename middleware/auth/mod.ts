@@ -95,7 +95,9 @@ export class TrainTicket {
     }
   };
 
-  readonly doLoginMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
+  readonly doLoginMiddleware: RequestHandler<any, TicketContext> = async (
+    ctx,
+  ) => {
     if (ctx.req.body.username && ctx.req.body.password) {
       ctx.data.login(ctx.req.body.username, ctx.req.body.password);
     } else {
@@ -103,7 +105,9 @@ export class TrainTicket {
     }
   };
 
-  readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = async (ctx) => {
+  readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = async (
+    ctx,
+  ) => {
     await ctx.data.logout();
   };
 }
