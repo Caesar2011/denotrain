@@ -43,11 +43,10 @@ export class Application<
     if (
       result === undefined && lifecycle == "onHandle" && ctx.res.body === null
     ) {
-      ctx.res
-        .setBody(
-          `Requested route ${ctx.req.original.method} ${ctx.req.original.url} not found!`,
-        )
-        .setStatus(404);
+      throw new ClientError(
+        404,
+        `Requested route ${ctx.req.original.method} ${ctx.req.original.url} not found!`,
+      );
     } else if (result !== true && result !== undefined) {
       ctx.res.setBody(result);
     }

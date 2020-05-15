@@ -234,6 +234,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       const newSubPath = req.relPath.substring(match[0].length) || "/";
       const addParams: { [_: string]: UrlEncodedValue } = {};
       for (let i = 0; i < handler.params.length; i++) {
+        if (handler.params[i] === null) continue;
         addParams[handler.params[i]] = parseValue(match[i + 1]);
       }
 
@@ -305,7 +306,11 @@ function instanceOfRequestOptions(object: any): object is RequestOptions {
 
 type Path = string | RegExp | null;
 
-type RequestOptions = { path?: string; lifecycle?: LifecycleHook };
+type RequestOptions = {
+  path?: string;
+  params?: (string|null)[];
+  lifecycle?: LifecycleHook;
+};
 
 type JSONSuccess = { [_: string]: any };
 
