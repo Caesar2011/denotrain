@@ -43,17 +43,22 @@ export class Request {
     }
 
     // Parse Body
-    if (contentType?.toLowerCase().includes("application/json")) {
-      this.body = JSON.parse(
-        new TextDecoder().decode(await Deno.readAll(this.original.body)),
-      );
+    const mime = contentType?.toLowerCase();
+    if (mime?.includes("application/json")) {
+      try {
+        this.body = JSON.parse(await this.bodyAsString());
+      } catch (e) {
+        if (!(e instanceof SyntaxError)) {
+          throw e;
+        }
+      }
     }
-    if (
-      contentType?.toLowerCase().includes("application/x-www-form-urlencoded")
-    ) {
-      this.body = decodeUrlEncoded(
-        new TextDecoder().decode(await Deno.readAll(this.original.body)),
-      );
+    if (mime?.includes("application/x-www-form-urlencoded")) {
+      this.body = decodeUrlEncoded(await this.bodyAsString());
     }
+  }
+
+  public async bodyAsString() {
+    return new TextDecoder().decode(await Deno.readAll(this.original.body));
   }
 }
