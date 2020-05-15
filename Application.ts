@@ -113,7 +113,7 @@ interface AppParameters extends AppOptions {
 export interface AppOptions {
   appRoot?: string;
   port?: number;
-  hostname: string;
+  hostname?: string;
   viewEngine?: ViewEngine;
   cookieStorage?: CookieStorage;
   cookieKey?: string;
