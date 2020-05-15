@@ -18,6 +18,7 @@ export class Application<
     this.onInit(this);
     const defs = {
       port: 3000,
+      hostname: '0.0.0.0',
       cookieKey: "train.ticket",
       cookieStorage: new MemoryCookieStorage(),
       cookieOptions: { maxAge: 60 * 60 * 24 },
@@ -26,8 +27,8 @@ export class Application<
   }
 
   public async run() {
-    const s = serve({ port: this.options.port });
-    console.log(`Serving on http://localhost:${this.options.port}/`);
+    const s = serve({ port: this.options.port, hostname: this.options.hostname });
+    console.log(`Serving on http://${this.options.hostname}:${this.options.port}/`);
     for await (const req of s) {
       this.handleRequest(req);
     }
@@ -78,6 +79,7 @@ export class Application<
 
 interface AppParameters extends AppOptions {
   port: number;
+  hostname: string;
   cookieStorage: CookieStorage;
   cookieKey: string;
   cookieOptions: CookieOptions;
@@ -86,6 +88,7 @@ interface AppParameters extends AppOptions {
 export interface AppOptions {
   appRoot?: string;
   port?: number;
+  hostname: string;
   viewEngine?: ViewEngine;
   cookieStorage?: CookieStorage;
   cookieKey?: string;
