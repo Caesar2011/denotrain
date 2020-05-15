@@ -15,6 +15,7 @@ export class Context<
   public cookies: { [key: string]: CookieValue } = {};
   private cookiesBefore: { [key: string]: CookieValue } = {};
   private ticket: string = "";
+  public error: any;
 
   constructor(request: ServerRequest, public readonly app: Application<S, R>) {
     this.req = new Request(request);

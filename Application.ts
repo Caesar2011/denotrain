@@ -51,29 +51,54 @@ export class Application<
 
   private async handleRequest(request: ServerRequest): Promise<void> {
     const ctx = new Context<S, R>(request, this);
-    await this.runHook(ctx, "onRequest");
-    await this.runHook(ctx, "preParsing");
-    await ctx._init();
-    await this.runHook(ctx, "preHandling");
     try {
+      // Register functions to ctx.data
+      // Start statistics
+      await this.runHook(ctx, "onRequest");
+      // Manipulate initial incoming request ctx.req.original
+      await this.runHook(ctx, "preParsing");
+      // Parsing cookies, query, body
+      await ctx._init();
+      // Manipulate parsed data, use cookies, load user data
+      // add data to ctx.data
+      await this.runHook(ctx, "preHandling");
+      // Default handler; return data (json, html)
       await this.runHook(ctx, "onHandle");
     } catch (e) {
-      console.error(e);
+      ctx.error = e;
       if (e instanceof ClientError) {
         ctx.res
           .setBody(e.message)
           .setStatus(e.statusCode);
       } else {
+        console.error(e);
         ctx.res
           .setBody("Internal server error!")
           .setStatus(500);
       }
     }
-    await this.runHook(ctx, "postHandling");
+    try {
+      // Parse ctx.error (error response); filter REST json data
+      await this.runHook(ctx, "postHandling");
+    } catch (e) {
+      console.error(e);
+    }
+    // Parse the response object and create ctx.res.response
     await ctx.res._prepareResponse();
-    await this.runHook(ctx, "preSending");
+    try {
+      // Manipulate final ctx.res.response to be send
+      await this.runHook(ctx, "preSending");
+    } catch (e) {
+      console.error(e);
+    }
+    // Send response to the client
     await ctx._respond();
-    await this.runHook(ctx, "postSending");
+    try {
+      // clean up data; generate statistics
+      await this.runHook(ctx, "postSending");
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
 

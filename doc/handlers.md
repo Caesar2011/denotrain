@@ -107,9 +107,21 @@ app.use({path: "/demo"}, () => "Hello World!");
 
 // this route applies on /demo
 // executed directly after a request was started
-app.use({path: "/demo", lifecycle: "onRequest"}, someOnRequestMiddlewareRouter);
+app.use({path: "/demo", lifecycle: "onRequest"}, someOnRequestMiddleware);
 ```
 
 ## Lifecycle
 
+During the processing of a request there are different statuses. You can intervene at any point in the lifecycle. The various lifecycle handlers are listed in more detail in the diagram below - together with their recommended purpose. The standard request handler is `onHandle`. If no other handler is specified, this one is used. To specify a particular handler, it must be specified as an object together with the path.
 
+```ts
+// this route applies on /demo
+// executed directly after a request was started
+app.use({path: "/demo", lifecycle: "onRequest"}, someOnRequestMiddleware);
+```
+
+If an error is thrown in one of the first four lifecycle states (`onRequest`, `preParsing`, `preHandling` or `onHandle`), no further handlers from the lifecycle up to and including 'onHandle' are executed. The thrown error is referenced in `ctx.error`. In addition, in the case of a `ClientError`, the body and the status code are automatically set accordingly. If the error is not a `ClientError`, the error is logged in the output and the body and status code are set according to an "Internal server error" (500).
+
+If an error occurs in one of the later lifecycle handlers, the error is automatically logged, but `ctx.error` and the response object are not changed. 
+
+![Lifecycle explained](./lifecycle.png)

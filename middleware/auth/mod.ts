@@ -1,4 +1,4 @@
-import { RequestHandler, ClientError, Context } from "../../mod.ts";
+import { RequestHandler, ClientError } from "../../mod.ts";
 import { v4 } from "./deps.ts";
 
 export class TrainTicket {
@@ -13,7 +13,7 @@ export class TrainTicket {
     this.storage.setTicketLifespan(this.options.ticketLifespan);
   }
 
-  addAuthenticator(key: string, auth: TicketAuthenticator) {
+  public addAuthenticator(key: string, auth: TicketAuthenticator) {
     this.authenticators[key] = auth;
   }
 
