@@ -10,6 +10,7 @@ export class Request {
   cookies: { [_: string]: string } = {};
   path: string = "";
   relPath: string = "";
+  private bodyArray: Uint8Array | null = null;
 
   constructor(request: ServerRequest) {
     this.original = request;
@@ -59,6 +60,14 @@ export class Request {
   }
 
   public async bodyAsString() {
-    return new TextDecoder().decode(await Deno.readAll(this.original.body));
+    const body = new TextDecoder().decode(await this.getBody());
+    return body;
+  }
+
+  public async getBody(): Promise<Uint8Array> {
+    if (this.bodyArray === null) {
+      this.bodyArray = await Deno.readAll(this.original.body);
+    }
+    return this.bodyArray;
   }
 }

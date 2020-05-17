@@ -13,7 +13,7 @@ export class Application<
   public options: AppParameters;
   public data: S = {} as S;
 
-  constructor(options: AppOptions) {
+  constructor(options?: AppOptions) {
     super();
     this.onInit(this);
     const defs = {
@@ -52,7 +52,7 @@ export class Application<
     }
   }
 
-  private async handleRequest(request: ServerRequest): Promise<void> {
+  public async handleRequest(request: ServerRequest): Promise<Context> {
     const ctx = new Context<S, R>(request, this);
     try {
       // Register functions to ctx.data
@@ -102,6 +102,7 @@ export class Application<
     } catch (e) {
       console.error(e);
     }
+    return ctx;
   }
 }
 

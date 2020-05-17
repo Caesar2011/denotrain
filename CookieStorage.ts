@@ -17,7 +17,7 @@ export class MemoryCookieStorage implements CookieStorage {
   private readonly lastTouched: { [ticket: string]: number } = {};
 
   constructor(private lifespan: number = 1000 * 60 * 60 * 24 * 30) {
-    setInterval(() => {
+    /*setInterval(() => {
       const now = Date.now();
       for (const ticket in this.lastTouched) {
         if (
@@ -28,7 +28,7 @@ export class MemoryCookieStorage implements CookieStorage {
           delete this.cookies[ticket];
         }
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000);*/
   }
 
   async setCookie(
@@ -58,7 +58,10 @@ export class MemoryCookieStorage implements CookieStorage {
   }
 
   private init(ticket: string) {
-    if (!this.cookies.hasOwnProperty(ticket)) {
+    if (
+      !this.cookies.hasOwnProperty(ticket) ||
+      this.lastTouched[ticket] + this.lifespan < Date.now()
+    ) {
       this.cookies[ticket] = {};
       this.lastTouched[ticket] = Date.now();
     }
