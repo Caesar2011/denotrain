@@ -206,7 +206,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       }
       path = path
         .replace(/(.)\/$/, "$1")
-        .replace(/\/:([a-z]+)/gi, "/([0-9a-zA-Z]+)");
+        .replace(/\/:([a-z]+)/gi, "/([A-z0-9._~!'()*+,;=:@$-]+)");
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);
