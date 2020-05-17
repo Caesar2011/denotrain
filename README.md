@@ -94,4 +94,4 @@ await app.run();
 
 ## Documentation
 
-View documentation on the [official documentation website](https://doc.deno.land/https/raw.githubusercontent.com/Caesar2011/denotrain/master/mod.ts).
+View documentation on the [official documentation website](https://doc.deno.land/https/deno.land/x/denotrain@master/mod.ts).
