@@ -5,7 +5,9 @@ import {
   LoggerContext,
 } from "./deps.ts";
 
-const app = new Application<LoggerContext>({ port: 3001 });
+const app = new Application<LoggerContext>(
+  { port: 3001, hostname: "127.0.0.1" },
+);
 
 app.use(new TrainLogger());
 app.use("/static", new TrainStatic("./public"));

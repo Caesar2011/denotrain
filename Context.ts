@@ -22,7 +22,7 @@ export class Context<
   }
 
   async _init() {
-    this.req._init();
+    await this.req._init();
     const cookieKey = this.app.options.cookieKey;
     const ticket = this.req.cookies[cookieKey] || null;
     if (!ticket) {

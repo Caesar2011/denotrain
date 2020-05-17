@@ -308,7 +308,7 @@ type Path = string | RegExp | null;
 
 type RequestOptions = {
   path?: string;
-  params?: (string|null)[];
+  params?: (string | null)[];
   lifecycle?: LifecycleHook;
 };
 
