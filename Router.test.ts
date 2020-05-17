@@ -18,6 +18,9 @@ async function generateRequest(method: string, url: string) {
 Deno.test('Router with matches', async () => {
   const paths = {
     '/t/user1': 'user1',
+    '/t/user-1': 'user-1',
+    '/t/user_1': 'user_1',
+    '/t/user$1': 'user$1',
     '/t/~user1': '~user1',
     '/t/user1!home': 'user1!home',
   }
