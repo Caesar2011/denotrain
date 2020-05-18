@@ -15,7 +15,7 @@ const router = new Router();
 
 `app` supports several methods depending on the used HTTP method. Handlers under `.use()` are called for all methods, corresponding to `.get()` only, for a request with the HTTP method `GET`. For user-defined methods or if denotrain does not support a special method, `.add()` can be used.
 
-`.use()` is supposed to be used with router and should not be used with a router function. Futher examples on this page using `.use()` are for demo purposes only.
+`.use()` is supposed to be used with router and should not be used with a router function. Further examples on this page using `.use()` are for demo purposes only.
 
 ```ts
 app.use("/", () => {});
