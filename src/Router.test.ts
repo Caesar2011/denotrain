@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.50.0/testing/asserts.ts";
-import { ServerRequest } from "./deps.ts";
+import { ServerRequest } from "../deps.ts";
 import { Application } from "./Application.ts";
 import { BufReader } from "https://deno.land/std@0.50.0/io/bufio.ts";
 import { stringsReader } from "https://deno.land/std@0.50.0/io/util.ts";

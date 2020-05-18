@@ -1,4 +1,4 @@
-import { ServerRequest } from "./deps.ts";
+import { ServerRequest } from "../deps.ts";
 import { UrlEncodedValue, decodeUrlEncoded } from "./utils/urlencoded.ts";
 import { parseCookieHeader } from "./utils/cookies.ts";
 

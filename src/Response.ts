@@ -3,7 +3,7 @@ import {
   extname,
   ServerRequest,
   Response as DenoResponse,
-} from "./deps.ts";
+} from "../deps.ts";
 import { Body } from "./Router.ts";
 import { generateCookieHeader, CookieOptions } from "./utils/cookies.ts";
 import { Context } from "./Context.ts";

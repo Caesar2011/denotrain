@@ -1,4 +1,4 @@
-import { ServerRequest, v4 } from "./deps.ts";
+import { ServerRequest, v4 } from "../deps.ts";
 import { Application } from "./Application.ts";
 import { Response } from "./Response.ts";
 import { Request } from "./Request.ts";

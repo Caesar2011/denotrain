@@ -1,4 +1,4 @@
-import { serve, ServerRequest } from "./deps.ts";
+import { serve, ServerRequest } from "../deps.ts";
 import { Router, LifecycleHook } from "./Router.ts";
 import { Context } from "./Context.ts";
 import { ViewEngine } from "./ViewEngine.ts";

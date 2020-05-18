@@ -1,4 +1,4 @@
-import { readFileStr, join } from "./deps.ts";
+import { readFileStr, join } from "../deps.ts";
 import { Context } from "./Context.ts";
 
 export abstract class ViewEngine {
