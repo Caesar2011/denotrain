@@ -1,1 +1,1 @@
-export { v4 } from "https://deno.land/std@0.50.0/uuid/mod.ts";
+export { v4 } from "https://deno.land/x/std@0.52.0/uuid/mod.ts";

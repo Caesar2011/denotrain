@@ -1,4 +1,4 @@
-export { join } from "https://deno.land/std@0.50.0/path/mod.ts";
+export { join } from "https://deno.land/x/std@0.52.0/path/mod.ts";
 
 export { Application, Router } from "../../mod.ts";
 export { TrainStatic } from "../../middleware/static/mod.ts";

@@ -7,4 +7,4 @@ export {
   white,
   red,
   bold,
-} from "https://deno.land/std@0.50.0/fmt/colors.ts";
+} from "https://deno.land/x/std@0.52.0/fmt/colors.ts";
