@@ -2,6 +2,7 @@ import {
   Application,
   TrainStatic,
   TrainLogger,
+  JsonError
 } from "./deps.ts";
 
 const app = new Application(
@@ -9,6 +10,7 @@ const app = new Application(
 );
 
 app.use(new TrainLogger());
+app.use(new JsonError(true));
 app.use("/static", new TrainStatic("./public"));
 
 app.get("/", (ctx) => {

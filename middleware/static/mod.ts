@@ -1,9 +1,9 @@
-import { Router, Context, join } from "./deps.ts";
+import { Router, join } from "./deps.ts";
 
 export class TrainStatic extends Router {
   constructor(private root: string) {
     super();
-    this.get(async (ctx: Context) => {
+    this.get(async (ctx) => {
       let relPath: string = ctx.req.relPath;
       if (relPath.endsWith("/")) {
         relPath = relPath + "index.html";

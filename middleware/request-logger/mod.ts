@@ -1,4 +1,4 @@
-import { Router } from "../../mod.ts";
+import { Router } from "./deps.ts";
 
 export class TrainLogger extends Router<any, any> {
   constructor() {
