@@ -6,35 +6,7 @@ export class MemoryCookieStorage implements CookieStorage {
   } = {};
   private readonly lastTouched: { [ticket: string]: number } = {};
 
-  constructor(private lifespan: number = 1000 * 60 * 60 * 24 * 30) {
-    /*setInterval(() => {
-      const now = Date.now();
-      for (const ticket in this.lastTouched) {
-        if (
-          this.lastTouched.hasOwnProperty(ticket) &&
-          this.lastTouched[ticket] + this.lifespan < now
-        ) {
-          delete this.lastTouched[ticket];
-          delete this.cookies[ticket];
-        }
-      }
-    }, 60 * 60 * 1000);*/
-  }
-
-  async setCookie(
-    ticket: string,
-    key: string,
-    value: CookieValue,
-  ): Promise<void> {
-    this.init(ticket);
-    this.cookies[ticket][key] = value;
-  }
-
-  async deleteCookie(ticket: string, key: string): Promise<void> {
-    if (this.cookies.hasOwnProperty(ticket)) {
-      delete this.cookies[ticket][key];
-    }
-  }
+  constructor(private lifespan: number = 1000 * 60 * 60 * 24 * 30) {}
 
   async getCookies(
     ticket: string,
@@ -42,9 +14,22 @@ export class MemoryCookieStorage implements CookieStorage {
     return this.cookies[ticket];
   }
 
+  async setCookies(
+    ticket: string,
+    values: { [key: string]: CookieValue },
+  ): Promise<void> {
+    this.init(ticket);
+    this.cookies[ticket] = values;
+  }
+
   async touch(ticket: string): Promise<void> {
     this.init(ticket);
     this.lastTouched[ticket] = Date.now();
+  }
+
+  async endSession(ticket: string): Promise<void> {
+    delete this.cookies[ticket];
+    delete this.lastTouched[ticket];
   }
 
   private init(ticket: string) {

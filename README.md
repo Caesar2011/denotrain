@@ -11,7 +11,7 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
  - [Responses](./doc/responses.md)
  - Routing (see also "Request handlers & lifecycle")
  - [Body, query and parameters](./doc/parameters.md)
- - Cookies
+ - [Cookies](./doc/cookies.md)
  - View Engines / Templates
  - Logging
  - Extend application and requests

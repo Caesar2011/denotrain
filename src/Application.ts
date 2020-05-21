@@ -31,6 +31,7 @@ export class Application<
       cookieKey: "train.ticket",
       cookieStorage: new MemoryCookieStorage(),
       cookieOptions: { maxAge: 60 * 60 * 24 },
+      cookieSecret: "changeThis",
     };
     this.options = { ...defs, ...options };
     this.options.logger.setLogLevel(this.options.logLevel);
@@ -98,7 +99,7 @@ export class Application<
       this.logger.error(e);
     }
     // Parse the response object and create ctx.res.response
-    await ctx.res._prepareResponse();
+    await ctx._prepareResponse();
     try {
       // Manipulate final ctx.res.response to be send
       await this.runHook(ctx, "preSending");
@@ -127,6 +128,7 @@ interface AppParameters extends AppOptions {
   cookieStorage: CookieStorage;
   cookieKey: string;
   cookieOptions: CookieOptions;
+  cookieSecret: string;
 }
 
 export interface AppOptions {
@@ -143,4 +145,5 @@ export interface AppOptions {
   cookieStorage?: CookieStorage;
   cookieKey?: string;
   cookieOptions?: CookieOptions;
+  cookieSecret?: string;
 }

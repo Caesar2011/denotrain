@@ -37,7 +37,6 @@ export class Response {
         return false;
       }
     } catch (e) {
-      console.log(e instanceof Deno.errors.NotFound);
       if (e instanceof Deno.errors.NotFound) {
         return false;
       }
