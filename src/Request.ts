@@ -5,6 +5,7 @@ import { parseCookieHeader } from "./utils/cookies.ts";
 export class Request {
   public readonly original: ServerRequest;
   query: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
+  rawQuery: string = "";
   params: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
   body: { [_: string]: any } = {};
   cookies: { [_: string]: string } = {};
@@ -31,6 +32,7 @@ export class Request {
 
     // Parse Query
     this.query = decodeUrlEncoded(regexQuery || "");
+    this.rawQuery = regexQuery || "";
 
     // Parse Cookies
     let contentType: string | null = null;

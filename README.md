@@ -9,14 +9,15 @@ This is a web server library inspired by [expressJS](https://expressjs.com) writ
  - [Getting Started!](./doc/getting_started.md)
  - [Request handlers & lifecycle](./doc/handlers.md)
  - [Responses](./doc/responses.md)
- - Routing
- - Body, query and parameters
+ - Routing (see also "Request handlers & lifecycle")
+ - [Body, query and parameters](./doc/parameters.md)
  - Cookies
  - View Engines / Templates
+ - Logging
  - Extend application and requests
  - Custom Middleware
    - Static
-   - Logging
+   - Request Logging
    - User Management
    - Entity Validation (TODO)
    - Database Connector (TODO)

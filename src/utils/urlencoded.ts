@@ -63,7 +63,7 @@ export function parseValue(value: string): UrlEncodedValue {
   if (value === "false") {
     return false;
   }
-  if (value.match(/^[0-9]+$/)) {
+  if (value.match(/^-?[0-9]+$/)) {
     return parseInt(value, 10);
   }
   return value;
