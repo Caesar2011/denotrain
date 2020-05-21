@@ -7,6 +7,7 @@ import {
 import { Body } from "./Router.ts";
 import { generateCookieHeader, CookieOptions } from "./utils/cookies.ts";
 import { Context } from "./Context.ts";
+import { ClientError } from "./ClientError.ts";
 
 export class Response {
   public body: Body | null = null;
@@ -36,7 +37,11 @@ export class Response {
         return false;
       }
     } catch (e) {
-      return false;
+      console.log(e instanceof Deno.errors.NotFound);
+      if (e instanceof Deno.errors.NotFound) {
+        return false;
+      }
+      throw e;
     }
     const file = await Deno.readFile(filePath);
     this

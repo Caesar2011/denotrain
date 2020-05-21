@@ -1,5 +1,4 @@
-import { render } from "https://deno.land/x/dejs@0.6.0/mod.ts";
-import { ViewEngine, Context } from "../../mod.ts";
+import { ViewEngine, Context, render } from "./deps.ts";
 
 export class DejsEngine extends ViewEngine {
   protected async _render(

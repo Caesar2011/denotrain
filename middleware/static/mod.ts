@@ -11,6 +11,7 @@ export class TrainStatic extends Router {
       const joinPath = ctx.app.options.appRoot
         ? join(ctx.app.options.appRoot, this.root, relPath)
         : join(this.root, relPath);
+      this.app?.logger.log("path", joinPath);
       const successful = await ctx.res.file(joinPath);
       if (successful) {
         return true;

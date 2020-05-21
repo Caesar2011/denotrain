@@ -5,7 +5,6 @@ export { ViewEngine } from "./src/ViewEngine.ts";
 export {
   CookieValue,
   CookieStorage,
-  MemoryCookieStorage,
 } from "./src/CookieStorage.ts";
 export { ClientError } from "./src/ClientError.ts";
 export { Response } from "./src/Response.ts";
