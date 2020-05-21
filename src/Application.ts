@@ -6,9 +6,9 @@ import { CookieStorage } from "./CookieStorage.ts";
 import { ClientError } from "./ClientError.ts";
 import { CookieOptions } from "./utils/cookies.ts";
 import { Logger, LogLevel } from "./Logger.ts";
-import { SinkLogger } from "../addons/sink-logger/SinkLogger.ts"; 
-import { ConsoleSink } from "../addons/sink-logger/ConsoleSink.ts"; 
-import { MemoryCookieStorage } from "../addons/memory-cookie-storage/MemoryCookieStorage.ts"; 
+import { SinkLogger } from "../addons/sink-logger/SinkLogger.ts";
+import { ConsoleSink } from "../addons/sink-logger/ConsoleSink.ts";
+import { MemoryCookieStorage } from "../addons/memory-cookie-storage/MemoryCookieStorage.ts";
 
 export class Application<
   S extends object = { [key: string]: any },

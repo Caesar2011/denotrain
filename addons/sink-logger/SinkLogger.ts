@@ -5,10 +5,14 @@ export interface Sink {
 }
 
 export class SinkLogger implements Logger {
-
   private readonly replacements: string[];
 
-  constructor(private sinks: Sink[], private logLevel: LogLevel, private prefix: string = "[{lvl} / {timeUTC}]", private prefixParser?: (level: LogLevel) => string) {
+  constructor(
+    private sinks: Sink[],
+    private logLevel: LogLevel,
+    private prefix: string = "[{lvl} / {timeUTC}]",
+    private prefixParser?: (level: LogLevel) => string,
+  ) {
     this.replacements = this.getReplacements(prefix);
   }
 
@@ -46,8 +50,8 @@ export class SinkLogger implements Logger {
     const regex = /{([^}]+)}/g;
     let curMatch: RegExpExecArray | null;
 
-    while(curMatch = regex.exec(msg)) {
-        found.add(curMatch[1]);
+    while (curMatch = regex.exec(msg)) {
+      found.add(curMatch[1]);
     }
     return Array.from(found);
   }
@@ -70,18 +74,21 @@ export class SinkLogger implements Logger {
       return this.prefix;
     }
     const date = new Date();
-    const repl: {[_: string]: string} = {
+    const repl: { [_: string]: string } = {
       level,
       lvl: level[0],
       timeUTC: date.toUTCString(),
       timeLocale: date.toLocaleString(),
-      timeISO: date.toISOString()
+      timeISO: date.toISOString(),
     };
     return this.formatMsg([this.prefix, repl])[0];
   }
 
   private formatMsg(msg: any[]): any[] {
-    if (msg.length === 2 && typeof msg[0] === 'string' && typeof msg[1] === 'object') {
+    if (
+      msg.length === 2 && typeof msg[0] === "string" &&
+      typeof msg[1] === "object"
+    ) {
       let result = msg[0];
       const data = msg[1];
       const repls = this.getReplacements(result);
