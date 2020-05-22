@@ -1,4 +1,4 @@
-import { serve, ServerRequest } from "../deps.ts";
+import { serve, serveTLS, ServerRequest } from "../deps.ts";
 import { Router, LifecycleHook } from "./Router.ts";
 import { Context } from "./Context.ts";
 import { ViewEngine } from "./ViewEngine.ts";
@@ -15,6 +15,7 @@ export class Application<
   R extends object = { [key: string]: any },
 > extends Router<S, R> {
   public options: AppParameters;
+  public servers: ListenOptions[];
   public data: S = {} as S;
   public logger: Logger;
 
@@ -22,9 +23,6 @@ export class Application<
     super();
     this.onInit(this);
     const defs = {
-      port: 3000,
-      hostname: "0.0.0.0",
-
       logger: new SinkLogger([new ConsoleSink()], "LOG"),
       logLevel: "LOG" as LogLevel,
 
@@ -36,14 +34,30 @@ export class Application<
     this.options = { ...defs, ...options };
     this.options.logger.setLogLevel(this.options.logLevel);
     this.logger = this.options.logger;
+
+    this.servers = [{
+      port: this.options.port,
+      hostname: this.options.hostname,
+      certFile: this.options.certFile,
+      keyFile: this.options.keyFile,
+    }, ...(options?.additionalServers ?? [])];
   }
 
   public async run() {
-    const s = serve(
-      { port: this.options.port, hostname: this.options.hostname },
-    );
+    await Promise.race(this.servers.map((server) => this.runServer(server)));
+  }
+
+  private async runServer(server: ListenOptions) {
+    const options = {
+      port: 3000,
+      hostname: "0.0.0.0",
+      ...server,
+    };
+    const [s, protocol] = (options.certFile && options.keyFile)
+      ? [serveTLS(options as Deno.ListenTlsOptions), "https"]
+      : [serve(options), "http"];
     this.logger.info(
-      `Serving on http://${this.options.hostname}:${this.options.port}/`,
+      `Serving on ${protocol}://${options.hostname}:${options.port}/`,
     );
     for await (const req of s) {
       this.handleRequest(req);
@@ -119,9 +133,6 @@ export class Application<
 }
 
 interface AppParameters extends AppOptions {
-  port: number;
-  hostname: string;
-
   logger: Logger;
   logLevel: LogLevel;
 
@@ -134,6 +145,10 @@ interface AppParameters extends AppOptions {
 export interface AppOptions {
   port?: number;
   hostname?: string;
+  certFile?: string;
+  keyFile?: string;
+
+  additionalServers?: ListenOptions[];
 
   appRoot?: string;
 
@@ -146,4 +161,11 @@ export interface AppOptions {
   cookieKey?: string;
   cookieOptions?: CookieOptions;
   cookieSecret?: string;
+}
+
+export interface ListenOptions {
+  port?: number;
+  hostname?: string;
+  certFile?: string;
+  keyFile?: string;
 }

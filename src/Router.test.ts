@@ -40,7 +40,7 @@ Deno.test("Router with param matches", async () => {
   }
 });
 
-Deno.test("Router with \"_\" in param name matches", async () => {
+Deno.test('Router with "_" in param name matches', async () => {
   const paths = {
     "/t/user1": "user1",
   };
@@ -56,7 +56,6 @@ Deno.test("Router with \"_\" in param name matches", async () => {
     assertEquals(ctx.res.body, { user_slug });
   }
 });
-
 
 Deno.test("Router with no matches", async () => {
   const paths = [

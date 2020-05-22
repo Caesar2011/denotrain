@@ -12,7 +12,7 @@ export class JsonError extends Router<any, any> {
         ctx.res.setBody({
           status: ctx.error.statusCode,
           msg: ctx.error.message,
-          details: ctx.error.details
+          details: ctx.error.details,
         });
       } else if (detailedServerError && ctx.error instanceof Error) {
         ctx.res.setBody({
@@ -20,14 +20,14 @@ export class JsonError extends Router<any, any> {
           msg: ctx.res.body,
           details: {
             name: ctx.error.name,
-            msg: ctx.error.message
-          }
+            msg: ctx.error.message,
+          },
         });
       } else {
         ctx.res.setBody({
           status: ctx.res.status,
           msg: ctx.res.body,
-          details: {}
+          details: {},
         });
       }
     });

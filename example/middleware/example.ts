@@ -2,7 +2,7 @@ import {
   Application,
   TrainStatic,
   TrainLogger,
-  JsonError
+  JsonError,
 } from "./deps.ts";
 
 const app = new Application(

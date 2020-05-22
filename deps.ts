@@ -1,5 +1,6 @@
 export {
   serve,
+  serveTLS,
   ServerRequest,
   Response,
 } from "https://deno.land/x/std@0.52.0/http/server.ts";
