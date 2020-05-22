@@ -199,14 +199,14 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     handler: RequestHandler<S, R>,
   ): HandlerEntry<S, R> {
     if (typeof path == "string") {
-      const paramMatches = path.matchAll(/\/:([a-z]+)/gi);
+      const paramMatches = path.matchAll(/\/:([a-z_]+)/gi);
       const params: string[] = [];
       for (const match of paramMatches) {
         params.push(match[1]);
       }
       path = path
         .replace(/(.)\/$/, "$1")
-        .replace(/\/:([a-z]+)/gi, "/([A-z0-9._~!'()*+,;=:@$-]+)");
+        .replace(/\/:([a-z_]+)/gi, "/([A-z0-9._~|!'()*+,;=:@$-]+)");
       const regex = (handler instanceof Router)
         ? new RegExp(`^${path}`)
         : new RegExp(`^${path}$`);

@@ -25,6 +25,7 @@ Deno.test("Router with param matches", async () => {
     "/t/user$1": "user$1",
     "/t/~user1": "~user1",
     "/t/user1!home": "user1!home",
+    "/t/user1|home": "user1|home",
   };
 
   const app = new Application();
@@ -38,6 +39,24 @@ Deno.test("Router with param matches", async () => {
     assertEquals(ctx.res.body, { slug });
   }
 });
+
+Deno.test("Router with \"_\" in param name matches", async () => {
+  const paths = {
+    "/t/user1": "user1",
+  };
+
+  const app = new Application();
+  app.get("/t/:user_slug", (ctx) => {
+    return ctx.req.params;
+  });
+
+  for (const [url, user_slug] of Object.entries(paths)) {
+    const req = generateRequest("GET", url);
+    const ctx = await app.handleRequest(req);
+    assertEquals(ctx.res.body, { user_slug });
+  }
+});
+
 
 Deno.test("Router with no matches", async () => {
   const paths = [
