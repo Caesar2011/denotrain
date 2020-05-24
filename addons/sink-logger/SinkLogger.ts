@@ -9,7 +9,7 @@ export class SinkLogger implements Logger {
 
   constructor(
     private sinks: Sink[],
-    private logLevel: LogLevel,
+    private logLevel: LogLevel = "LOG",
     private prefix: string = "[{lvl} / {timeUTC}]",
     private prefixParser?: (level: LogLevel) => string,
   ) {

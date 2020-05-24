@@ -23,7 +23,7 @@ export class Application<
     super();
     this.onInit(this);
     const defs = {
-      logger: new SinkLogger([new ConsoleSink()], "LOG"),
+      logger: new SinkLogger([new ConsoleSink()]),
       logLevel: "LOG" as LogLevel,
 
       cookieKey: "train.ticket",
