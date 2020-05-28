@@ -35,12 +35,19 @@ export class Application<
     this.options.logger.setLogLevel(this.options.logLevel);
     this.logger = this.options.logger;
 
-    this.servers = [{
-      port: this.options.port,
-      hostname: this.options.hostname,
-      certFile: this.options.certFile,
-      keyFile: this.options.keyFile,
-    }, ...(options?.additionalServers ?? [])];
+    const serverOptions: ListenOptions = {};
+    if (this.options.port)
+      serverOptions.port = this.options.port;
+    if (this.options.hostname)
+      serverOptions.hostname = this.options.hostname;
+    if (this.options.certFile)
+      serverOptions.certFile = this.options.certFile;
+    if (this.options.keyFile)
+      serverOptions.keyFile = this.options.keyFile;
+    this.servers = [
+      serverOptions,
+      ...(options?.additionalServers ?? [])
+    ];
   }
 
   public async run() {
