@@ -10,5 +10,5 @@ app.get("/home", async (ctx) => {
     .render("index.ejs", { name: "World" });
   return true;
 });
-
+console.log("Cool stuff");
 await app.run();
