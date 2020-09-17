@@ -7,6 +7,7 @@ export class Request {
   query: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
   rawQuery: string = "";
   params: { [_: string]: UrlEncodedValue | UrlEncodedValue[] } = {};
+  paramsRaw: { [_: string]: string | string[] } = {};
   body: { [_: string]: any } = {};
   cookies: { [_: string]: string } = {};
   path: string = "";

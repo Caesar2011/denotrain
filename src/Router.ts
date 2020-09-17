@@ -170,8 +170,9 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       // Update parameters
       const oldRelPath: string = req.relPath;
       const oldParams = req.params;
+      const oldRawParams = req.paramsRaw;
       req.relPath = iter.newSubPath;
-      req.params = { ...req.params, ...iter.addParams };
+      req.paramsRaw = { ...req.paramsRaw, ...iter.rawParams };
       // Handle
       if (iter.handler instanceof Router) {
         result = await iter.handler.handle(ctx, lifecycle);
@@ -181,6 +182,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
       // Restore
       req.relPath = oldRelPath;
       req.params = oldParams;
+      req.paramsRaw = oldRawParams;
       if (result !== undefined) {
         return result;
       }
@@ -220,11 +222,11 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     ctx: Context<S, R>,
     handler: HandlerEntry<S, R>,
   ):
-    | { newSubPath: string; addParams: { [_: string]: UrlEncodedValue } }
+    | { newSubPath: string; addParams: { [_: string]: UrlEncodedValue }, rawParams: { [_: string]: string } }
     | null {
     const req = ctx.req;
     if (!handler.regex) {
-      return { newSubPath: req.relPath || "/", addParams: {} };
+      return { newSubPath: req.relPath || "/", addParams: {}, rawParams: {} };
     }
     if (handler.method && handler.method !== req.original.method) {
       return null;
@@ -233,12 +235,14 @@ export class Router<S extends object = Obj, R extends object = Obj> {
     if (match) {
       const newSubPath = req.relPath.substring(match[0].length) || "/";
       const addParams: { [_: string]: UrlEncodedValue } = {};
+      const rawParams: { [_: string]: string } = {};
       for (let i = 0; i < handler.params.length; i++) {
         if (handler.params[i] === null) continue;
         addParams[handler.params[i]] = parseValue(match[i + 1]);
+        rawParams[handler.params[i]] = match[i + 1];
       }
 
-      return { newSubPath, addParams };
+      return { newSubPath, addParams, rawParams };
     } else {
       return null;
     }
@@ -251,6 +255,7 @@ export class Router<S extends object = Obj, R extends object = Obj> {
         yield {
           newSubPath: matchedPath.newSubPath,
           addParams: matchedPath.addParams,
+          rawParams: matchedPath.rawParams,
           handler: handler.handler,
         };
       }
