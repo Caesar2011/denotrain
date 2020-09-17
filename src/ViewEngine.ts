@@ -12,8 +12,7 @@ export abstract class ViewEngine {
     const joinPath = ctx.app.options.appRoot
       ? join(ctx.app.options.appRoot, this.path, file)
       : join(this.path, file);
-    const decoder = new TextDecoder('utf-8');
-    const f = decoder.decode(await Deno.readFile(joinPath));
+    const f = await Deno.readTextFile(joinPath);
     return this._render(f, data, ctx);
   }
 

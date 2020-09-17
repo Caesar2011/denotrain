@@ -1,8 +1,8 @@
-import { assertEquals } from "https://deno.land/x/std@0.66.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/x/std@0.69.0/testing/asserts.ts";
 import { ServerRequest } from "../deps.ts";
 import { Application } from "./Application.ts";
-import { BufReader } from "https://deno.land/x/std@0.66.0/io/bufio.ts";
-import { stringsReader } from "https://deno.land/x/std@0.66.0/io/util.ts";
+import { BufReader } from "https://deno.land/x/std@0.69.0/io/bufio.ts";
+import { StringReader } from "https://deno.land/x/std@0.69.0/io/readers.ts";
 function generateRequest(
   method: string,
   url: string,
@@ -143,7 +143,7 @@ Deno.test("Router with body parameter", async () => {
 
   for (const [url, data] of Object.entries(paths)) {
     const req = generateRequest("GET", url, data.headers);
-    req.r = new BufReader(stringsReader(data.body));
+    req.r = new BufReader(new StringReader(data.body));
     req.headers.append("Content-Length", "" + data.body.length);
     const ctx = await app.handleRequest(req);
     assertEquals(ctx.req.body, data.res, `for ${url}`);
