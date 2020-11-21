@@ -1,4 +1,5 @@
 import { LogLevel, Logger, LogLevelHirachy, replaceAll } from "./deps.ts";
+import {Obj} from "../../mod.ts";
 
 export interface Sink {
   emit(logLevel: LogLevel, prefix: string, msg: unknown[]): void;
@@ -94,7 +95,7 @@ export class SinkLogger implements Logger {
       const repls = this.getReplacements(result);
       if (repls.length > 0) {
         for (const repl of repls) {
-          result = replaceAll(result, `{${repl}}`, String(data?[repl] : ""));
+          result = replaceAll(result, `{${repl}}`, String((data || {} as Obj)[repl]));
         }
         return [result];
       }
