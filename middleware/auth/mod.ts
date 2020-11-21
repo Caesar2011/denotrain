@@ -1,5 +1,6 @@
 import { RequestHandler, ClientError } from "../../mod.ts";
 import { v4 } from "./deps.ts";
+import {Obj} from "../../src/utils/object.ts";
 
 export class TrainTicket {
   private readonly options: TicketParameters;
@@ -105,9 +106,7 @@ export class TrainTicket {
     }
   };
 
-  readonly doLogoutMiddleware: RequestHandler<any, TicketContext> = async (
-    ctx,
-  ) => {
+  readonly doLogoutMiddleware: RequestHandler<Obj, TicketContext> = async (ctx) => {
     await ctx.data.logout();
   };
 }

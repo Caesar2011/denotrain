@@ -8,7 +8,7 @@ import { CookieOptions } from "./utils/cookies.ts";
 import { Logger, LogLevel } from "./Logger.ts";
 import { SinkLogger } from "../addons/sink-logger/SinkLogger.ts";
 import { ConsoleSink } from "../addons/sink-logger/ConsoleSink.ts";
-import { MemoryCookieStorage } from "../addons/memory-cookie-storage/MemoryCookieStorage.ts";
+import { MemorySessionStorage } from "../addons/memory-cookie-storage/MemorySessionStorage.ts";
 
 export class Application<
   S extends object = { [key: string]: any },
@@ -26,10 +26,10 @@ export class Application<
       logger: new SinkLogger([new ConsoleSink()]),
       logLevel: "LOG" as LogLevel,
 
-      cookieKey: "train.ticket",
-      cookieStorage: new MemoryCookieStorage(),
-      cookieOptions: { maxAge: 60 * 60 * 24 },
-      cookieSecret: "changeThis",
+      sessionKey: "train.ticket",
+      sessionStorage: new MemorySessionStorage(),
+      sessionOptions: { maxAge: 60 * 60 * 24 },
+      sessionSecret: "changeThis",
     };
     this.options = { ...defs, ...options };
     this.options.logger.setLogLevel(this.options.logLevel);

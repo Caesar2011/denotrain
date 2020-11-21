@@ -1,6 +1,6 @@
 import { SessionStorage, SessionValue } from "./deps.ts";
 
-export class MemoryCookieStorage implements SessionStorage {
+export class MemorySessionStorage implements SessionStorage {
   private readonly cookies: {
     [ticket: string]: { [key: string]: SessionValue };
   } = {};

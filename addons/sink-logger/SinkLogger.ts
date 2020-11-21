@@ -1,7 +1,7 @@
 import { LogLevel, Logger, LogLevelHirachy, replaceAll } from "./deps.ts";
 
 export interface Sink {
-  emit(logLevel: LogLevel, prefix: string, msg: any[]): void;
+  emit(logLevel: LogLevel, prefix: string, msg: unknown[]): void;
 }
 
 export class SinkLogger implements Logger {
@@ -16,19 +16,19 @@ export class SinkLogger implements Logger {
     this.replacements = this.getReplacements(prefix);
   }
 
-  public log(...msg: any[]): void {
+  public log(...msg: unknown[]): void {
     this.eval("LOG", msg);
   }
 
-  public debug(...msg: any[]): void {
+  public debug(...msg: unknown[]): void {
     this.eval("DEBUG", msg);
   }
 
-  public info(...msg: any[]): void {
+  public info(...msg: unknown[]): void {
     this.eval("INFO", msg);
   }
 
-  public warn(...msg: any[]): void {
+  public warn(...msg: unknown[]): void {
     this.eval("WARN", msg);
   }
 
@@ -36,7 +36,7 @@ export class SinkLogger implements Logger {
     this.eval("ERROR", msg);
   }
 
-  public critical(...msg: any[]): void {
+  public critical(...msg: unknown[]): void {
     msg = this.formatMsg(msg);
     this.eval("CRITICAL", msg);
   }
@@ -56,7 +56,7 @@ export class SinkLogger implements Logger {
     return Array.from(found);
   }
 
-  private eval(level: LogLevel, msg: any[]) {
+  private eval(level: LogLevel, msg: unknown[]) {
     if (LogLevelHirachy[this.logLevel] <= LogLevelHirachy[level]) {
       msg = this.formatMsg(msg);
       const prefix = this.parsePrefix(level);
@@ -81,10 +81,10 @@ export class SinkLogger implements Logger {
       timeLocale: date.toLocaleString(),
       timeISO: date.toISOString(),
     };
-    return this.formatMsg([this.prefix, repl])[0];
+    return String(this.formatMsg([this.prefix, repl])[0]);
   }
 
-  private formatMsg(msg: any[]): any[] {
+  private formatMsg(msg: unknown[]): unknown[] {
     if (
       msg.length === 2 && typeof msg[0] === "string" &&
       typeof msg[1] === "object"
@@ -94,7 +94,7 @@ export class SinkLogger implements Logger {
       const repls = this.getReplacements(result);
       if (repls.length > 0) {
         for (const repl of repls) {
-          result = replaceAll(result, `{${repl}}`, data[repl]);
+          result = replaceAll(result, `{${repl}}`, String(data?[repl] : ""));
         }
         return [result];
       }

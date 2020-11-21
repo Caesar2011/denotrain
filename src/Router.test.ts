@@ -1,8 +1,8 @@
-import { assertEquals } from "https://deno.land/x/std@0.69.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/x/std@0.78.0/testing/asserts.ts";
 import { ServerRequest } from "../deps.ts";
 import { Application } from "./Application.ts";
-import { BufReader } from "https://deno.land/x/std@0.69.0/io/bufio.ts";
-import { StringReader } from "https://deno.land/x/std@0.69.0/io/readers.ts";
+import { BufReader } from "https://deno.land/x/std@0.78.0/io/bufio.ts";
+import { StringReader } from "https://deno.land/x/std@0.78.0/io/readers.ts";
 function generateRequest(
   method: string,
   url: string,
