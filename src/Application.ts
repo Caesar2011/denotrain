@@ -2,7 +2,7 @@ import { serve, serveTLS, ServerRequest } from "../deps.ts";
 import { Router, LifecycleHook } from "./Router.ts";
 import { Context } from "./Context.ts";
 import { ViewEngine } from "./ViewEngine.ts";
-import { CookieStorage } from "./CookieStorage.ts";
+import { SessionStorage } from "./SessionStorage.ts";
 import { ClientError } from "./ClientError.ts";
 import { CookieOptions } from "./utils/cookies.ts";
 import { Logger, LogLevel } from "./Logger.ts";
@@ -143,10 +143,10 @@ interface AppParameters extends AppOptions {
   logger: Logger;
   logLevel: LogLevel;
 
-  cookieStorage: CookieStorage;
-  cookieKey: string;
-  cookieOptions: CookieOptions;
-  cookieSecret: string;
+  sessionStorage: SessionStorage;
+  sessionKey: string;
+  sessionOptions: CookieOptions;
+  sessionSecret: string;
 }
 
 export interface AppOptions {
@@ -164,10 +164,10 @@ export interface AppOptions {
 
   viewEngine?: ViewEngine;
 
-  cookieStorage?: CookieStorage;
-  cookieKey?: string;
-  cookieOptions?: CookieOptions;
-  cookieSecret?: string;
+  sessionStorage?: SessionStorage;
+  sessionKey?: string;
+  sessionOptions?: CookieOptions;
+  sessionSecret?: string;
 }
 
 export interface ListenOptions {

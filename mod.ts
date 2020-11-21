@@ -6,9 +6,9 @@ export { Request } from "./src/Request.ts";
 
 export { ViewEngine } from "./src/ViewEngine.ts";
 export {
-  CookieValue,
-  CookieStorage,
-} from "./src/CookieStorage.ts";
+  SessionValue,
+  SessionStorage,
+} from "./src/SessionStorage.ts";
 export { Logger, LogLevel, LogLevelHirachy } from "./src/Logger.ts";
 
 export { ClientError } from "./src/ClientError.ts";

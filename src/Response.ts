@@ -1,13 +1,11 @@
 import {
   contentType,
   extname,
-  ServerRequest,
   Response as DenoResponse,
 } from "../deps.ts";
 import { Body } from "./Router.ts";
 import { generateCookieHeader, CookieOptions } from "./utils/cookies.ts";
 import { Context } from "./Context.ts";
-import { ClientError } from "./ClientError.ts";
 
 export class Response {
   public body: Body | null = null;

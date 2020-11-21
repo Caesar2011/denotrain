@@ -1,22 +1,22 @@
-import { CookieStorage, CookieValue } from "./deps.ts";
+import { SessionStorage, SessionValue } from "./deps.ts";
 
-export class MemoryCookieStorage implements CookieStorage {
+export class MemoryCookieStorage implements SessionStorage {
   private readonly cookies: {
-    [ticket: string]: { [key: string]: CookieValue };
+    [ticket: string]: { [key: string]: SessionValue };
   } = {};
   private readonly lastTouched: { [ticket: string]: number } = {};
 
   constructor(private lifespan: number = 1000 * 60 * 60 * 24 * 30) {}
 
-  async getCookies(
+  async getSession(
     ticket: string,
-  ): Promise<{ [key: string]: CookieValue } | undefined> {
+  ): Promise<{ [key: string]: SessionValue } | undefined> {
     return this.cookies[ticket];
   }
 
-  async setCookies(
+  async setSession(
     ticket: string,
-    values: { [key: string]: CookieValue },
+    values: { [key: string]: SessionValue },
   ): Promise<void> {
     this.init(ticket);
     this.cookies[ticket] = values;

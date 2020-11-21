@@ -1,1 +1,1 @@
-export { CookieStorage, CookieValue } from "../../src/CookieStorage.ts";
+export { SessionStorage, SessionValue } from "../../src/SessionStorage.ts";

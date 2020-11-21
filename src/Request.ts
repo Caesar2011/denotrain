@@ -1,6 +1,6 @@
-import { ServerRequest } from "../deps.ts";
-import { UrlEncodedValue, decodeUrlEncoded } from "./utils/urlencoded.ts";
-import { parseCookieHeader } from "./utils/cookies.ts";
+import {ServerRequest} from "../deps.ts";
+import {decodeUrlEncoded, UrlEncodedValue} from "./utils/urlencoded.ts";
+import {parseCookieHeader} from "./utils/cookies.ts";
 
 export class Request {
   public readonly original: ServerRequest;
@@ -63,8 +63,7 @@ export class Request {
   }
 
   public async bodyAsString() {
-    const body = new TextDecoder().decode(await this.getBody());
-    return body;
+    return new TextDecoder().decode(await this.getBody());
   }
 
   public async getBody(): Promise<Uint8Array> {
